@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>本地视频分类播放器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css?v=31" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <div id="appThemeBackdrop" class="app-theme-backdrop" aria-hidden="true"></div>
+      <header class="toolbar" aria-label="工具栏">
+        <div class="toolbar-inner">
+          <div class="toolbar-slot">
+            <label class="toolbar-chip toolbar-chip-search">
+              <span class="toolbar-chip-icon" aria-hidden="true">
+              <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M1004.7744 1004.7488a65.6384 65.6384 0 0 1-92.8768 0l-177.664-177.6128c-76.7488 57.4464-171.008 92.672-274.2784 92.672A459.9296 459.9296 0 0 1 0.0256 459.9808a459.9296 459.9296 0 1 1 919.808 0c0 103.2192-35.2256 197.4784-92.672 274.3296l177.664 177.5616c25.6 25.6512 25.6 67.2768 0 92.928zM460.8256 136.5504a324.2496 324.2496 0 1 0 0.1024 648.4992 324.2496 324.2496 0 0 0-0.1024-648.4992z"
+                />
+              </svg>
+            </span>
+            <input
+              id="searchInput"
+              class="toolbar-chip-input"
+              type="search"
+              placeholder=""
+              aria-label="搜索"
+            />
+            </label>
+          </div>
+
+          <div class="toolbar-filter">
+            <button
+              type="button"
+              class="toolbar-chip toolbar-filter-btn"
+              id="filterCategoryBtn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="toolbar-filter-label">筛选分类</span>
+            </button>
+            <div
+              class="toolbar-filter-panel"
+              id="filterCategoryPanel"
+              role="listbox"
+              hidden
+            ></div>
+          </div>
+
+          <div class="toolbar-filter">
+            <button
+              type="button"
+              class="toolbar-chip toolbar-filter-btn"
+              id="filterAuthorBtn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="toolbar-filter-label">筛选作者</span>
+            </button>
+            <div
+              class="toolbar-filter-panel"
+              id="filterAuthorPanel"
+              role="listbox"
+              hidden
+            ></div>
+          </div>
+
+          <div class="toolbar-filter">
+            <button
+              type="button"
+              class="toolbar-chip toolbar-filter-btn"
+              id="filterRoleBtn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="toolbar-filter-label">筛选歌手</span>
+            </button>
+            <div
+              class="toolbar-filter-panel"
+              id="filterRolePanel"
+              role="listbox"
+              hidden
+            ></div>
+          </div>
+
+          <div class="toolbar-filter">
+            <button
+              type="button"
+              class="toolbar-chip toolbar-filter-btn"
+              id="filterLevelBtn"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="toolbar-filter-label">喜爱等级</span>
+            </button>
+            <div
+              class="toolbar-filter-panel"
+              id="filterLevelPanel"
+              role="listbox"
+              hidden
+            ></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main" id="appMain">
+        <section class="panel panel-info" id="infoPanelRoot" aria-label="视频信息">
+          <button
+            type="button"
+            class="panel-title"
+            id="infoTitleBtn"
+            aria-expanded="false"
+          >
+            视频信息
+          </button>
+          <div class="panel-body info-view" id="infoView">
+            <div class="info-row info-row-cover">
+              <div class="info-cover-box" id="infoCoverBox">
+                <span class="info-cover-placeholder" id="infoCoverPlaceholder">封面</span>
+                <img id="infoCoverImg" class="info-cover-img" alt="" hidden />
+                <canvas
+                  id="infoColorWheel"
+                  class="info-color-wheel"
+                  width="200"
+                  height="200"
+                  hidden
+                ></canvas>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">名称：</span>
+              <div class="info-field">
+                <div class="info-value-box" id="infoNameDisplay" title="点击复制" role="button" tabindex="0"></div>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">分类：</span>
+              <div class="info-field">
+                <div class="info-chips" id="infoCategoryChips"></div>
+                <input
+                  type="text"
+                  class="info-input"
+                  id="infoCategoryInput"
+                  hidden
+                />
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">作者：</span>
+              <div class="info-field">
+                <div class="info-chips" id="infoAuthorChips"></div>
+                <input type="text" class="info-input" id="infoAuthorInput" hidden />
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">歌手：</span>
+              <div class="info-field">
+                <div class="info-chips" id="infoRoleChips"></div>
+                <input type="text" class="info-input" id="infoRoleInput" hidden />
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-label">喜爱：</span>
+              <div class="info-field">
+                <div class="info-level" id="infoLevel" role="group" aria-label="喜爱等级"></div>
+              </div>
+            </div>
+
+            <div class="info-row info-row-edit-only">
+              <span class="info-label">取色：</span>
+              <div class="info-field">
+                <div
+                  class="info-cover-mode"
+                  id="infoCoverMode"
+                  role="tablist"
+                  aria-label="取色模式"
+                >
+                  <button
+                    type="button"
+                    class="info-cover-mode-btn is-active"
+                    data-mode="cover"
+                    role="tab"
+                    aria-selected="true"
+                  >
+                    封面
+                  </button>
+                  <button
+                    type="button"
+                    class="info-cover-mode-btn"
+                    data-mode="light"
+                    role="tab"
+                    aria-selected="false"
+                  >
+                    亮色盘
+                  </button>
+                  <button
+                    type="button"
+                    class="info-cover-mode-btn"
+                    data-mode="dark"
+                    role="tab"
+                    aria-selected="false"
+                  >
+                    深色盘
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-row info-row-pick info-row-edit-only">
+              <span class="info-label">主题：</span>
+              <div class="info-field info-field-pick">
+                <button
+                  type="button"
+                  class="info-sq-btn info-sq-theme"
+                  id="infoThemePreview"
+                  aria-label="主题色"
+                ></button>
+                <div class="info-pick-component-group">
+                  <span class="info-pick-label info-pick-component-label">组件：</span>
+                  <button
+                    type="button"
+                    class="info-sq-btn info-sq-component"
+                    id="infoComponentPreview"
+                    aria-label="组件色"
+                  ></button>
+                </div>
+                <button type="button" class="info-action-btn info-pick-confirm-btn" id="infoConfirmBtn">
+                  确定
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel panel-player" aria-label="视频展示">
+          <svg
+            class="panel-player-split-frame"
+            aria-hidden="true"
+            hidden
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient
+                id="panelPlayerBorderGrad"
+                gradientUnits="objectBoundingBox"
+                x1="0"
+                y1="0"
+                x2="1"
+                y2="0"
+              ></linearGradient>
+            </defs>
+            <rect
+              class="panel-player-split-frame__ring"
+              fill="none"
+              stroke="url(#panelPlayerBorderGrad)"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+          </svg>
+          <div class="panel-body panel-body-player" id="playerPanel">
+            <div id="specialFxRoot" class="special-fx-layer" hidden aria-hidden="true">
+              <canvas id="specialFxCanvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="player-zone player-zone-video">
+              <video
+                id="videoBackdrop"
+                class="player-video-backdrop"
+                playsinline
+                muted
+                aria-hidden="true"
+              ></video>
+              <video id="videoElement" class="player-video-main" playsinline></video>
+            </div>
+            <div class="player-progress-wrap" id="playerProgressWrap">
+              <div
+                class="player-progress-track"
+                id="playerProgressTrack"
+                role="slider"
+                tabindex="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+                aria-label="播放进度"
+              >
+                <div class="player-progress-fill" aria-hidden="true"></div>
+                <div class="player-progress-thumb" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="player-zone player-zone-viz">
+              <div class="player-visualizer" aria-hidden="true">
+                <canvas id="visualizerCanvas"></canvas>
+              </div>
+            </div>
+            <div class="player-zone player-zone-controls">
+              <div class="player-ctrl-bar" role="toolbar" aria-label="播放控制">
+                <button type="button" class="player-ctrl-btn" id="btnImport" title="导入文件" aria-label="导入文件">
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M612.37248 411.62752V30.208h-200.74496v381.41952H30.208v200.74496h381.41952v381.41952h200.74496V612.37248h381.41952v-200.74496z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnExportJson"
+                  title="导出 video.json"
+                  aria-label="导出 video.json"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M170.666667 128h554.666666l158.165334 158.165333a42.666667 42.666667 0 0 1 12.501333 30.165334V853.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667z m341.333333 640a128 128 0 1 0 0-256 128 128 0 0 0 0 256zM213.333333 213.333333v170.666667h426.666667V213.333333H213.333333z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnTranslate"
+                  title="翻译模式"
+                  aria-label="翻译模式"
+                  aria-pressed="false"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M213.333333 682.666667v42.666666a85.333333 85.333333 0 0 0 78.933334 85.12L298.666667 810.666667h85.333333a42.666667 42.666667 0 0 1 0 85.333333H298.666667a170.666667 170.666667 0 0 1-170.666667-170.666667v-42.666666a42.666667 42.666667 0 0 1 85.333333 0z m560.042667-242.602667l170.666667 426.666667a21.333333 21.333333 0 0 1-19.84 29.269333h-45.994667a21.333333 21.333333 0 0 1-19.797333-13.397333L812.544 768h-174.506667l-45.781333 114.602667a21.333333 21.333333 0 0 1-19.84 13.397333H526.506667a21.333333 21.333333 0 0 1-19.797334-29.269333l170.666667-426.666667a21.333333 21.333333 0 0 1 19.797333-13.397333h56.405334a21.333333 21.333333 0 0 1 19.84 13.397333zM725.333333 549.76L672.128 682.666667h106.325333L725.333333 549.76zM341.333333 106.666667V170.666667h149.333334a21.333333 21.333333 0 0 1 21.333333 21.333333v256a21.333333 21.333333 0 0 1-21.333333 21.333333H341.333333v106.666667a21.333333 21.333333 0 0 1-21.333333 21.333333h-42.666667a21.333333 21.333333 0 0 1-21.333333-21.333333V469.333333H106.666667a21.333333 21.333333 0 0 1-21.333334-21.333333v-256a21.333333 21.333333 0 0 1 21.333334-21.333333H256V106.666667a21.333333 21.333333 0 0 1 21.333333-21.333334h42.666667a21.333333 21.333333 0 0 1 21.333333 21.333334z m384 21.333333a170.666667 170.666667 0 0 1 170.666667 170.666667v42.666666a42.666667 42.666667 0 0 1-85.333333 0V298.666667a85.333333 85.333333 0 0 0-85.333334-85.333334h-85.333333a42.666667 42.666667 0 0 1 0-85.333333h85.333333zM256 256H170.666667v128h85.333333V256z m170.666667 0H341.333333v128h85.333334V256z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnSpecialFx"
+                  title="特殊效果"
+                  aria-label="特殊效果"
+                  aria-pressed="false"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M564.34 171.38l76.94 47.12 32.28 19.77 34.59-15.38 82.43-36.66-21 87.73-8.83 36.81L786 338.91 846.37 406l-89.94 7.1-37.73 3-18.94 32.77L654.62 527l-34.55-83.4-14.49-35-37-7.88L480.32 382l68.59-58.61 28.77-24.59-3.94-37.65-9.4-89.73m-46.11-107c-18.77 0-35.79 16.11-33.58 37.28l17.48 166.91-127.58 109c-21.24 18.15-12.45 52.77 14.87 58.59l164.14 34.95 64.26 155a33.7 33.7 0 0 0 60.31 4l84-145.31 167.3-13.2c27.85-2.2 41.08-35.38 22.4-56.14L839.56 290.75l39.13-163.19C884 105.29 866.54 85.92 846 85.92a33.89 33.89 0 0 0-13.78 3l-153.33 68.19-143.11-87.66a33.4 33.4 0 0 0-17.55-5zM267.36 623.38l29.64 30 23.65 23.93 33.12-5.91 41.53-7.4-19.38 37.47-15.45 29.89L376.32 761l19.89 37.21-41.63-6.85-33.2-5.47-23.32 24.26-29.24 30.4-6.35-41.7-5.06-33.27-30.27-14.69-38-18.41 37.7-18.92L257 698.49l4.61-33.33 5.79-41.78m-33.88-118.49a16.36 16.36 0 0 0-16.33 14.17l-19 137.33-123.92 62.19a16.4 16.4 0 0 0 0.2 29.41L199.2 808.5l20.85 137.06a16.38 16.38 0 0 0 16.31 14 16.12 16.12 0 0 0 11.73-5l96.1-99.92L481 877.06a17.77 17.77 0 0 0 2.78 0.23 16.41 16.41 0 0 0 14.35-24.14l-65.36-122.28 63.69-123.14a16.41 16.41 0 0 0-14.45-24 17.24 17.24 0 0 0-3 0.27l-136.48 24.41-97.43-98.63a16.12 16.12 0 0 0-11.58-4.89zM822.7 742.55l-0.05 10.4-0.13 29.44 24.18 16.8 8.54 5.93-9.91 3.17-28 9-8.5 28.19-3 9.95-6.12-8.43-17.2-23.89-29.43 0.62-10.4 0.22 6.15-8.39 17.41-23.74-9.68-27.82-3.43-9.82 9.88 3.26 28 9.22 23.45-17.8 8.28-6.29M862.63 646a16.16 16.16 0 0 0-9.82 3.36l-72.26 54.87-86.17-28.42a16.59 16.59 0 0 0-5.2-0.85 16.38 16.38 0 0 0-15.36 21.76l29.85 85.68L650 855.57a16.35 16.35 0 0 0 13.15 26h0.38l90.71-1.91 53 73.64a16.09 16.09 0 0 0 13.21 6.8 16.26 16.26 0 0 0 15.72-11.63l26.21-86.86L948.82 834a16.35 16.35 0 0 0 4.34-29l-74.51-51.8 0.4-90.73A16.36 16.36 0 0 0 862.63 646z"
+                    />
+                  </svg>
+                </button>
+                <div class="player-ctrl-volume" id="volumeControl">
+                  <div
+                    class="player-volume-popover"
+                    id="volumePopover"
+                    hidden
+                    role="group"
+                    aria-label="音量调节"
+                  >
+                    <label class="player-volume-slider-wrap">
+                      <span class="visually-hidden">音量</span>
+                      <div
+                        class="player-volume-track"
+                        id="volumeTrack"
+                        role="slider"
+                        tabindex="0"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="100"
+                        aria-label="音量"
+                      >
+                        <div class="player-volume-fill" aria-hidden="true"></div>
+                      </div>
+                      <div class="player-volume-thumb" aria-hidden="true"></div>
+                      <input
+                        type="range"
+                        class="player-volume-slider"
+                        id="volumeSlider"
+                        min="0"
+                        max="100"
+                        value="100"
+                        tabindex="-1"
+                        aria-hidden="true"
+                      />
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    class="player-ctrl-btn"
+                    id="btnVolume"
+                    title="音量"
+                    aria-label="音量"
+                    aria-expanded="false"
+                    aria-controls="volumePopover"
+                  >
+                    <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                      <path
+                        fill="currentColor"
+                        d="M260.256 356.576l204.288-163.968a32 32 0 0 1 52.032 24.96v610.432a32 32 0 0 1-51.968 24.992l-209.92-167.552H96a32 32 0 0 1-32-32v-264.864a32 32 0 0 1 32-32h164.256zM670.784 720.128a32 32 0 0 1-44.832-45.664 214.08 214.08 0 0 0 64.32-153.312 213.92 213.92 0 0 0-55.776-144.448 32 32 0 1 1 47.36-43.04 277.92 277.92 0 0 1 72.416 187.488 278.08 278.08 0 0 1-83.488 198.976zM822.912 858.88a32 32 0 1 1-45.888-44.608A419.008 419.008 0 0 0 896 521.152c0-108.704-41.376-210.848-114.432-288.384a32 32 0 0 1 46.592-43.872c84.16 89.28 131.84 207.04 131.84 332.256 0 127.84-49.76 247.904-137.088 337.728z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnPrev"
+                  title="上一曲"
+                  aria-label="上一曲"
+                >
+                  <svg viewBox="0 0 1098 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M840.35 173.429v735.951c0 6.814 0 10.221-3.406 17.035 0 3.405 0 6.814-3.406 6.814-10.22 17.035-23.849 27.258-40.887 27.258h-3.405c-3.405 0-6.814 0-13.629-3.406-3.405 0-6.814-3.406-10.22-3.406l-538.335-344.125v275.982c0 40.886-30.663 78.366-68.143 78.367s-68.143-34.073-68.143-78.367v-691.658c0-40.886 30.663-78.366 68.143-78.367s68.143 34.073 68.143 78.367v275.982l538.335-347.533c3.405 0 6.814-3.406 10.22-3.406s6.814-3.406 13.629-3.406h3.405c17.036 0 34.073 10.22 40.887 27.258 0 3.405 0 3.405 3.406 6.814v3.405c3.406 6.814 3.406 10.22 3.406 17.035-3.406 3.406 0 3.405 0 3.405zM738.133 810.577v-541.743l-419.085 269.168 419.085 272.575z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn player-ctrl-btn-play"
+                  id="btnPlayPause"
+                  title="播放"
+                  aria-label="播放"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnNext"
+                  title="下一曲"
+                  aria-label="下一曲"
+                >
+                  <svg viewBox="0 0 1098 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M183.65 850.571l0-735.951c0-6.814 0-10.221 3.406-17.035 0-3.405 0-6.814 3.406-6.814 10.22-17.035 23.849-27.258 40.887-27.258l3.405 0c3.405 0 6.814 0 13.629 3.406 3.405 0 6.814 3.406 10.22 3.406l538.335 344.125 0-275.982c0-40.88600001 30.663-78.366 68.143-78.367s68.14300001 34.073 68.143 78.367l0 691.658c0 40.88600001-30.663 78.366-68.143 78.367s-68.14300001-34.073-68.143-78.367l0-275.982-538.335 347.533c-3.405 0-6.814 3.406-10.22000001 3.406s-6.814 3.406-13.62899999 3.406l-3.405 0c-17.03599999 0-34.073-10.22-40.88699999-27.258 0-3.405 0-3.405-3.40600001-6.814l0-3.405c-3.406-6.814-3.406-10.22-3.406-17.035 3.406-3.406 0-3.405 0-3.405zM285.867 213.42299999l0 541.743 419.085-269.16799999-419.085-272.57500001z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnSpeed"
+                  title="加速"
+                  aria-label="加速"
+                >
+                  <svg viewBox="0 0 1260 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M77.738464 1011.260664l536.872038-462.255925a50.350711 50.350711 0 0 0 0-72.796208L77.738464 12.739336A46.104265 46.104265 0 0 0 0.089175 48.530806v926.331753a46.104265 46.104265 0 0 0 77.649289 36.398105z m629.687204 0l536.872038-462.255925a49.744076 49.744076 0 0 0 0-72.796208L707.425668 12.739336a46.104265 46.104265 0 0 0-77.649289 36.398105v925.725118a46.104265 46.104265 0 0 0 77.649289 36.398105z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnPlayMode"
+                  title="随机播放"
+                  aria-label="随机播放"
+                >
+                  <svg viewBox="0 0 1170 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M950.616094 1023.999269a73.124315 73.124315 0 0 1-51.918264-21.206052 73.124315 73.124315 0 0 1 0-103.836527l21.937295-21.206051H731.243149a73.124315 73.124315 0 0 1-62.155668-34.368428L325.403201 292.75612H73.124315a73.124315 73.124315 0 0 1 0-146.24863h292.49726a73.124315 73.124315 0 0 1 62.155667 34.368428l121.386363 193.779434 119.923876-193.779434A73.124315 73.124315 0 0 1 731.243149 146.50749h189.391976l-21.937295-21.206051A73.124315 73.124315 0 0 1 1002.534357 21.464911l146.24863 146.24863a73.124315 73.124315 0 0 1 0 103.836527l-146.24863 146.24863a73.124315 73.124315 0 0 1-103.836527-103.836527l21.937295-21.206051h-146.24863l-138.936198 219.372944 136.011225 219.372945h146.24863l-21.937294-21.206051a73.124315 73.124315 0 0 1 103.836527-103.836527l146.24863 146.248629a73.124315 73.124315 0 0 1 0 103.836528l-146.24863 146.248629A73.124315 73.124315 0 0 1 950.616094 1023.999269z m-584.994519-146.24863H73.124315a73.124315 73.124315 0 0 1 0-146.24863h253.010129l25.593511-40.218373a73.124315 73.124315 0 0 1 122.848849 79.705503l-47.530805 73.124315A73.124315 73.124315 0 0 1 365.621575 877.750639z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnPip"
+                  title="小窗化"
+                  aria-label="小窗化"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M896 128a42.666667 42.666667 0 0 1 42.666667 42.666667v298.666666h-85.333334V213.333333H170.666667v597.333334h256v85.333333H128a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667h768z m0 426.666667a42.666667 42.666667 0 0 1 42.666667 42.666666v256a42.666667 42.666667 0 0 1-42.666667 42.666667h-341.333333a42.666667 42.666667 0 0 1-42.666667-42.666667v-256a42.666667 42.666667 0 0 1 42.666667-42.666666h341.333333zM286.165333 268.501333l96 96L469.333333 277.333333V512H234.666667l87.168-87.168-96-96 60.330666-60.330667z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnFullscreen"
+                  title="全屏"
+                  aria-label="全屏"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M981.333333 682.666667c-25.6 0-42.666667 17.066667-42.666666 42.666666v192c0 12.8-8.533333 21.333333-21.333334 21.333334H725.333333c-25.6 0-42.666667 17.066667-42.666666 42.666666s17.066667 42.666667 42.666666 42.666667h192c59.733333 0 106.666667-46.933333 106.666667-106.666667V725.333333c0-25.6-17.066667-42.666667-42.666667-42.666666zM298.666667 938.666667H106.666667c-12.8 0-21.333333-8.533333-21.333334-21.333334V725.333333c0-25.6-17.066667-42.666667-42.666666-42.666666s-42.666667 17.066667-42.666667 42.666666v192C0 977.066667 46.933333 1024 106.666667 1024H298.666667c25.6 0 42.666667-17.066667 42.666666-42.666667s-17.066667-42.666667-42.666666-42.666666zM917.333333 0H725.333333c-25.6 0-42.666667 17.066667-42.666666 42.666667s17.066667 42.666667 42.666666 42.666666h192c12.8 0 21.333333 8.533333 21.333334 21.333334V298.666667c0 25.6 17.066667 42.666667 42.666666 42.666666s42.666667-17.066667 42.666667-42.666666V106.666667C1024 46.933333 977.066667 0 917.333333 0zM42.666667 341.333333c25.6 0 42.666667-17.066667 42.666666-42.666666V106.666667c0-12.8 8.533333-21.333333 21.333334-21.333334H298.666667c25.6 0 42.666667-17.066667 42.666666-42.666666s-17.066667-42.666667-42.666666-42.666667H106.666667C46.933333 0 0 46.933333 0 106.666667V298.666667c0 25.6 17.066667 42.666667 42.666667 42.666666z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M183.466667 277.333333v469.333334c0 51.2 42.666667 98.133333 98.133333 98.133333h469.333333c51.2 0 98.133333-42.666667 98.133334-98.133333v-469.333334c0-51.2-42.666667-98.133333-98.133334-98.133333h-469.333333c-55.466667 4.266667-98.133333 46.933333-98.133333 98.133333z m597.333333 0v469.333334c0 17.066667-12.8 34.133333-34.133333 34.133333h-469.333334c-17.066667 0-34.133333-12.8-34.133333-34.133333v-469.333334c0-17.066667 12.8-34.133333 34.133333-34.133333h469.333334c17.066667 4.266667 34.133333 17.066667 34.133333 34.133333z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="player-ctrl-btn"
+                  id="btnLocate"
+                  title="定位当前歌曲"
+                  aria-label="定位当前歌曲"
+                >
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+                    <path
+                      fill="currentColor"
+                      d="M512 415.185455c-53.527273 0-96.814545 43.287273-96.814545 96.814545s43.287273 96.814545 96.814545 96.814545 96.814545-43.287273 96.814545-96.814545-43.287273-96.814545-96.814545-96.814545z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M936.96 480.349091h-59.578182c-14.894545-177.803636-156.392727-318.836364-334.196363-334.196364V87.04c0-17.221818-13.963636-31.650909-31.65091-31.650909s-31.185455 13.963636-31.185454 31.650909v59.578182c-177.803636 14.894545-318.836364 156.392727-334.196364 334.196363H87.04c-17.221818 0-31.650909 13.963636-31.650909 31.185455s13.963636 31.650909 31.650909 31.650909h59.578182c14.894545 177.803636 156.392727 318.836364 334.196363 334.196364v59.578182c0 17.221818 13.963636 31.185455 31.185455 31.185454s31.650909-13.963636 31.650909-31.185454v-59.578182c177.803636-14.894545 318.836364-156.392727 334.196364-334.196364h59.578182c17.221818 0 31.185455-13.963636 31.185454-31.650909s-13.963636-31.185455-31.185454-31.185455z m-393.774545 334.196364v-39.098182c0-17.221818-13.963636-31.185455-31.65091-31.185455s-31.185455 13.963636-31.185454 31.185455v39.098182a305.152 305.152 0 0 1-271.36-271.36h39.098182c17.221818 0 31.650909-13.963636 31.650909-31.65091s-13.963636-31.185455-31.650909-31.185454h-39.098182a305.152 305.152 0 0 1 271.36-271.36v39.098182c0 17.221818 13.963636 31.650909 31.185454 31.650909s31.650909-13.963636 31.65091-31.650909v-39.098182c142.894545 14.894545 256.465455 128.465455 271.36 271.36h-39.098182c-17.221818 0-31.185455 13.963636-31.185455 31.185454s13.963636 31.650909 31.185455 31.65091h39.098182a305.152 305.152 0 0 1-271.36 271.36z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="player-zone-divider" aria-hidden="true"></div>
+        </section>
+
+        <section class="panel panel-playlist" aria-label="视频列表">
+          <button
+            type="button"
+            class="panel-title"
+            id="playlistTitleBtn"
+            aria-expanded="false"
+            aria-controls="playlistPanel"
+          >
+            视频列表
+          </button>
+          <div class="panel-body panel-body-playlist" id="playlistPanel">
+            <div class="playlist-grid" id="playlistGrid"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toolbarFilterLayer" class="toolbar-filter-layer" aria-hidden="true"></div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <canvas id="infoCoverPickCanvas" hidden aria-hidden="true"></canvas>
+
+    <script src="./js/utils.js?v=1"></script>
+    <script src="./js/songs.js?v=1"></script>
+    <script src="./js/effects/base.js?v=1"></script>
+    <script src="./js/effects/panel.js?v=1"></script>
+    <script src="./js/effects/visualizer.js?v=1"></script>
+    <script src="./js/special.js?v=1"></script>
+    <script src="./split-color.js?v=25"></script>
+    <script src="./main.js?v=36"></script>
+  </body>
+</html>
