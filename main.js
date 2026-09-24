@@ -1,33 +1,33 @@
 /**
- * 本地视频分类播放器 — 主入口
+ * 本地视频分类播放器
  */
 
-const U = AppUtils;
+const DEFAULT_SONGS = [];
 
-const theme = {
-  themeColor: "#ffffff",
-  componentColor: "#000000",
+const MEDIA_EXTS = [".mp4", ".mp3", ".flac"];
+const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif"];
+const LRC_EXT = ".lrc";
+const LEVEL_MAX = 5;
+
+const PLAY_ICON_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z"/></svg>`;
+const VIZ_MODE_LYRICS_SVG = `<svg viewBox="-8 -8 1040 1040" aria-hidden="true"><path fill="currentColor" d="M927.27050913-6.45970103L96.72949087-6.45970103C39.73034507-6.45970103-6.45970103 40.10740668-6.45970103 96.72949087l0 830.47817565C-6.45970103 984.26965493 40.10740668 1030.45970103 96.72949087 1030.45970103l830.47817565 0c56.9991458 0 103.18919189-46.56710769 103.18919189-103.1891919L1030.39685694 96.72949087C1030.45970103 39.73034507 983.89259332-6.45970103 927.27050913-6.45970103zM935.69155253 936.19430083c0-0.43990567-847.88585338-0.50274831-847.88585336-0.5027483C88.24560484 935.69155253 88.30844747 87.80569917 88.30844747 87.80569917 88.30844747 88.24560484 936.19430083 88.30844747 936.19430083 88.30844747 935.75439516 88.30844747 935.69155253 936.19430083 935.69155253 936.19430083z"/><path fill="currentColor" d="M794.29345226 761.61477969l0.50274831 0.25137488L794.79620057 272.88010103c-1.69677721-27.39981014-20.54985724-41.97952441-56.49639603-43.6763016L435.07943344 229.20379943c-18.85308003 1.69677721-29.09658734 13.69990433-30.85620715 35.94653879 1.69677721 22.24663444 12.00312714 34.24976158 30.85620715 35.94653878l280.03108266 0c5.15317571 0 7.72976282 2.57658711 7.7297628 7.72976282l0 416.21316312 0.69127913 0.37706161-96.90483141 0c-9.86644571 0-25.89156372 12.82009443-27.14843524 33.36995167 1.25687152 22.24663444 14.89393324 34.24976158 27.14843524 35.94653878l145.73430869 0C785.30681645 793.16226745 792.59667504 782.10179284 794.29345226 761.61477969zM460.78246639 403.9090073c-17.15630283-1.69677721-26.51999876-13.69990433-28.27962006-35.9465388 1.69677721-20.54985724 11.12331723-31.67317446 28.27962006-33.36995166l210.65174811 0c20.54985724 1.69677721 31.67317446 12.82009443 33.36995167 33.36995166-1.69677721 22.24663444-12.00312714 34.24976158-30.85620718 35.9465388L460.78246639 403.9090073zM250.88484147 298.58313397C240.82986497 296.88635678 218.45754382 284.88322964 217.45204573 262.5737511 218.45754382 242.02389387 237.18493715 230.90057665 247.30275628 229.20379943l82.82786545 0c12.12881531 1.69677721 29.47364895 12.82009443 30.47914557 33.36995167C359.66711329 284.88322964 341.25393897 296.88635678 330.13062173 298.58313397L250.88484147 298.58313397zM350.30341737 723.53155803l0-301.6492806c1.69677721-37.70616007-12.82009443-55.6794302-43.6763016-53.98265301L244.97754258 367.89962442C226.12446254 369.65924572 215.88095671 381.66237286 214.12133541 403.9090073c1.69677721 24.00625573 12.00312714 36.82635015 30.85620717 38.52312736L270.68057552 442.43213466c5.15317571 0 7.72976282 2.57658711 7.72976282 7.72976282l0 304.41439851c-0.12568672 0.7541232-0.18853081 1.5710905-0.1885308 2.38805632 0.18853081 4.46189513 1.25687152 8.48388603 2.8908061 12.12881531 4.27336431 14.01412332 11.62606554 21.30398045 28.15393335 25.38881397 2.76511791 0.43990567 5.46739321-0.12568672 8.1696685-1.57109051l72.39582735 0c10.68341152-1.69677721 30.60483376-13.69990433 31.61033038-35.94653877-0.94265401-20.54985724-19.92142077-31.67317446-31.61033038-33.36995168 0 0-17.91042605 0-36.63781938 0L350.30341737 723.59440212zM494.21526067 691.66985277c-35.94653878 0-53.98265298-17.15630283-53.98265299-51.40606442L440.23260915 491.26161197c0-34.24976158 15.39668155-51.40606442 46.25289018-51.40606441l151.5787635 0c35.94653878 0 53.10284161 14.57971571 51.40606441 43.67630159l0 156.7319392c0 34.24976158-15.39668155 51.40606442-46.25289017 51.40606442L494.21526067 691.66985277zM512.18853081 617.13734252c1.69677721 3.45639851 4.27336431 5.97014151 7.72976281 7.7297628l89.92919177 0c5.15317571 0 7.72976282-2.57658711 7.72976282-7.7297628L617.57724821 516.9646449c0-5.15317571-2.57658711-7.72976282-7.72976282-7.72976281L519.85544953 509.23488209c-5.15317571 0-7.72976282 2.57658711-7.72976281 7.72976281L512.12568672 617.13734252z"/></svg>`;
+const VIZ_MODE_VIZ_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M760.89 263.11v497.78h-99.56V263.11h99.56z m-398.22 0v497.78h-99.56V263.11h99.56zM163.56 412.44v199.11H64V412.44h99.56z m796.44 0v199.11h-99.56V412.44H960zM561.78 113.78v796.44h-99.56V113.78h99.56z"/></svg>`;
+const PAUSE_ICON_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M128 0h253.155556v1024H128V0z m512 0h256v1024h-256V0z"/></svg>`;
+const PLAY_MODE_SHUFFLE_SVG = `<svg viewBox="0 0 1170 1024" aria-hidden="true"><path fill="currentColor" d="M950.616094 1023.999269a73.124315 73.124315 0 0 1-51.918264-21.206052 73.124315 73.124315 0 0 1 0-103.836527l21.937295-21.206051H731.243149a73.124315 73.124315 0 0 1-62.155668-34.368428L325.403201 292.75612H73.124315a73.124315 73.124315 0 0 1 0-146.24863h292.49726a73.124315 73.124315 0 0 1 62.155667 34.368428l121.386363 193.779434 119.923876-193.779434A73.124315 73.124315 0 0 1 731.243149 146.50749h189.391976l-21.937295-21.206051A73.124315 73.124315 0 0 1 1002.534357 21.464911l146.24863 146.24863a73.124315 73.124315 0 0 1 0 103.836527l-146.24863 146.24863a73.124315 73.124315 0 0 1-103.836527-103.836527l21.937295-21.206051h-146.24863l-138.936198 219.372944 136.011225 219.372945h146.24863l-21.937294-21.206051a73.124315 73.124315 0 0 1 103.836527-103.836527l146.24863 146.248629a73.124315 73.124315 0 0 1 0 103.836528l-146.24863 146.248629A73.124315 73.124315 0 0 1 950.616094 1023.999269z m-584.994519-146.24863H73.124315a73.124315 73.124315 0 0 1 0-146.24863h253.010129l25.593511-40.218373a73.124315 73.124315 0 0 1 122.848849 79.705503l-47.530805 73.124315A73.124315 73.124315 0 0 1 365.621575 877.750639z"/></svg>`;
+const PLAY_MODE_LIST_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M569.6 448H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c-6.4-25.6-25.6-44.8-51.2-44.8z m0 332.8H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c-6.4-25.6-25.6-44.8-51.2-44.8zM44.8 243.2H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c0-25.6-19.2-44.8-44.8-44.8H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8z m684.8-134.4c-25.6 0-44.8 19.2-38.4 44.8v716.8c0 25.6 19.2 44.8 44.8 44.8h32c12.8 0 32-6.4 38.4-25.6l217.6-236.8c0-25.6-19.2-44.8-44.8-44.8h-166.4V153.6c0-25.6-19.2-44.8-44.8-44.8h-38.4z"/></svg>`;
+const PLAY_MODE_SINGLE_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M449.024 832.512h-52.736c-152.064-25.088-268.288-157.184-268.288-315.904 0-53.248 13.824-102.912 36.864-146.944l39.424 54.272c28.672 39.424 90.112 28.672 103.424-18.432l31.232-112.64 43.008-155.136c10.24-37.376-17.408-73.728-56.32-73.728h-267.264c-47.616 0-74.752 53.76-47.104 92.16l72.192 100.352c-52.224 73.216-83.456 162.816-83.456 260.096 0 224.256 164.352 409.6 378.88 442.88 5.632 1.024 11.776 0.512 16.896 0v1.024h52.736c34.816 0 62.976-28.16 62.976-62.976v-1.536c0.512-35.328-27.648-63.488-62.464-63.488zM1012.736 867.328l-72.192-100.352C992.768 693.76 1024 604.16 1024 507.392c0-224.256-164.352-409.6-378.88-442.88-5.632-1.024-11.776-0.512-16.896 0v-1.024h-52.736c-34.816 0-62.976 28.16-62.976 62.976v1.536c0 34.816 28.16 62.976 62.976 62.976h52.736C779.776 216.064 896 348.672 896 507.392c0 53.248-13.824 102.912-36.864 146.944l-39.424-54.272c-28.672-39.424-90.112-28.672-103.424 18.432l-31.232 112.64-43.008 155.136c-10.24 37.376 17.408 73.728 56.32 73.728h267.264c47.616-0.512 74.752-54.272 47.104-92.672z"/><path fill="currentColor" d="M554.496 349.184v263.168h-43.008v-211.456c-15.872 14.336-35.84 25.088-59.904 32.256v-43.008c11.776-3.072 24.576-8.192 37.376-15.36 13.312-8.192 24.576-16.384 33.28-25.6h32.256z"/></svg>`;
+const PLAY_MODE_LABELS = {
+  shuffle: "随机播放",
+  list: "顺序播放",
+  single: "单曲循环",
 };
 
-/** @type {{ videos: object[]; currentIndex: number; playbackRate: number; playMode: "shuffle"|"list"|"single"; shuffleOrder: number[]; shuffleFingerprint: string }} */
-const state = {
-  videos: [],
-  currentIndex: -1,
-  root: null,
-  translateMode: false,
-  specialEffectsEnabled: true,
-  playbackRate: 1,
-  playMode: "shuffle",
-  shuffleOrder: [],
-  shuffleFingerprint: "",
-};
-
-const filterSelection = {
-  category: new Set(),
-  author: new Set(),
-  role: new Set(),
-  level: new Set(),
-};
+const LEVEL_HEART_SVG = `<svg class="info-level-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+const LEVEL_FILTER_HEART_SVG = `<svg class="level-filter-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+const INFO_DEFAULT_NAME = "歌曲名称";
+const DEFAULT_THEME = { bgHex: "#ffffff", fgHex: "#000000" };
+const FILTER_NONE = "__filter_none__";
+const FILTER_CATEGORY_LEGACY_UNCATEGORIZED = "未分类";
 
 const FILTER_PANELS = [
   {
@@ -56,33 +56,74 @@ const FILTER_PANELS = [
   },
 ];
 
+const filterSelection = {
+  category: new Set(),
+  author: new Set(),
+  role: new Set(),
+  level: new Set(),
+};
+
 const filterUi = {
   openKind: null,
 };
 
 const infoUi = {
   editing: false,
-  /** @type {"cover"|"light"|"dark"} */
-  coverViewMode: "cover",
-  pickTarget: "theme",
-  /** 进入编辑时的原始快照，取消时用于还原 */
   editSnapshot: null,
-  /** 编辑中的工作副本（等级、主题色等），仅确定时写入视频 */
   editWork: null,
+  /** @type {"theme"|"component"|null} */
+  pickTarget: null,
+};
+
+const state = {
+  root: null,
+  songs: DEFAULT_SONGS.map((title, id) => ({
+    id,
+    title,
+    titleDisplay: title,
+    coverUrl: "",
+    url: "",
+  })),
+  currentIndex: -1,
+  searchQuery: "",
+  /** @type {"viz"|"lyrics"} 中间栏可视化区模式 */
+  midChromeMode: "viz",
+  translateMode: false,
+  playbackRate: 1,
+  playMode: "shuffle",
+  shuffleOrder: [],
+  shuffleFingerprint: "",
+  volume: 1,
+  volumeOpen: false,
+  themeColor: DEFAULT_THEME.bgHex,
+  componentColor: DEFAULT_THEME.fgHex,
+  /** @type {{ time: number, orig: string, trans: string }[]} */
+  lyrics: [],
+  lyricsSongId: -1,
+  activeLyricIndex: -1,
+  lyricsLoadToken: 0,
 };
 
 const dom = {
-  root: document.documentElement,
-  toast: document.getElementById("toast"),
-  searchInput: document.getElementById("searchInput"),
-  infoPanelRoot: document.getElementById("infoPanelRoot"),
+  playlistGrid: document.getElementById("playlistGrid"),
+  playlistTitleBtn: document.getElementById("playlistTitleBtn"),
+  playlistSearch: document.getElementById("playlistSearch"),
   infoTitleBtn: document.getElementById("infoTitleBtn"),
+  infoPanelRoot: document.getElementById("infoPanelRoot"),
   infoView: document.getElementById("infoView"),
+  infoControls: document.getElementById("infoControls"),
+  playerZoneViz: document.getElementById("playerZoneViz"),
+  vizLyrics: document.getElementById("vizLyrics"),
+  vizLyricsEmpty: document.getElementById("vizLyricsEmpty"),
+  vizLyricsCurrent: document.getElementById("vizLyricsCurrent"),
+  vizLyricsOrig: document.getElementById("vizLyricsOrig"),
+  vizLyricsTrans: document.getElementById("vizLyricsTrans"),
+  btnInfoEdit: document.getElementById("btnInfoEdit"),
+  btnInfoSave: document.getElementById("btnInfoSave"),
+  btnInfoExport: document.getElementById("btnInfoExport"),
   infoCoverBox: document.getElementById("infoCoverBox"),
   infoCoverPlaceholder: document.getElementById("infoCoverPlaceholder"),
   infoCoverImg: document.getElementById("infoCoverImg"),
-  infoColorWheel: document.getElementById("infoColorWheel"),
-  infoCoverPickCanvas: document.getElementById("infoCoverPickCanvas"),
   infoNameDisplay: document.getElementById("infoNameDisplay"),
   infoCategoryChips: document.getElementById("infoCategoryChips"),
   infoCategoryInput: document.getElementById("infoCategoryInput"),
@@ -90,26 +131,22 @@ const dom = {
   infoAuthorInput: document.getElementById("infoAuthorInput"),
   infoRoleChips: document.getElementById("infoRoleChips"),
   infoRoleInput: document.getElementById("infoRoleInput"),
-  infoCoverMode: document.getElementById("infoCoverMode"),
+  infoLevel: document.getElementById("infoLevel"),
   infoThemePreview: document.getElementById("infoThemePreview"),
   infoComponentPreview: document.getElementById("infoComponentPreview"),
-  infoLevel: document.getElementById("infoLevel"),
-  infoConfirmBtn: document.getElementById("infoConfirmBtn"),
-  videoEl: document.getElementById("videoElement"),
-  videoBackdrop: document.getElementById("videoBackdrop"),
+  infoCoverPickCanvas: document.getElementById("infoCoverPickCanvas"),
   playerZoneVideo: document.querySelector(".player-zone-video"),
-  playerProgressTrack: document.getElementById("playerProgressTrack"),
-  playerProgressWrap: document.getElementById("playerProgressWrap"),
-  visualizerCanvas: document.getElementById("visualizerCanvas"),
+  videoEl: document.getElementById("videoElement"),
+  progressWrap: document.getElementById("progressWrap"),
+  progressTrack: document.getElementById("progressTrack"),
+  progressFill: document.getElementById("progressFill"),
+  progressThumb: document.getElementById("progressThumb"),
+  progressTimeTip: document.getElementById("progressTimeTip"),
+  vizCanvas: document.getElementById("visualizerCanvas"),
   btnImport: document.getElementById("btnImport"),
-  btnExportJson: document.getElementById("btnExportJson"),
+  btnVizLyrics: document.getElementById("btnVizLyrics"),
   btnTranslate: document.getElementById("btnTranslate"),
-  btnSpecialFx: document.getElementById("btnSpecialFx"),
   btnVolume: document.getElementById("btnVolume"),
-  volumePopover: document.getElementById("volumePopover"),
-  volumeTrack: document.getElementById("volumeTrack"),
-  volumeSlider: document.getElementById("volumeSlider"),
-  volumeControl: document.getElementById("volumeControl"),
   btnPrev: document.getElementById("btnPrev"),
   btnPlayPause: document.getElementById("btnPlayPause"),
   btnNext: document.getElementById("btnNext"),
@@ -117,594 +154,638 @@ const dom = {
   btnPlayMode: document.getElementById("btnPlayMode"),
   btnPip: document.getElementById("btnPip"),
   btnFullscreen: document.getElementById("btnFullscreen"),
+  volumeControl: document.getElementById("volumeControl"),
+  volumePopover: document.getElementById("volumePopover"),
+  volumeSlider: document.getElementById("volumeSlider"),
+  playlistControls: document.getElementById("playlistControls"),
+  btnListTop: document.getElementById("btnListTop"),
   btnLocate: document.getElementById("btnLocate"),
-  playlistGrid: document.getElementById("playlistGrid"),
-  appMain: document.getElementById("appMain"),
-  playlistTitleBtn: document.getElementById("playlistTitleBtn"),
+  btnListBottom: document.getElementById("btnListBottom"),
+  filterCategoryBtn: document.getElementById("filterCategoryBtn"),
+  filterAuthorBtn: document.getElementById("filterAuthorBtn"),
+  filterRoleBtn: document.getElementById("filterRoleBtn"),
+  filterLevelBtn: document.getElementById("filterLevelBtn"),
+  toast: document.getElementById("toast"),
 };
 
-const playlistUi = {
-  expanded: false,
-};
-
-const PLAY_ICON_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M893.035 463.821679C839.00765 429.699141 210.584253 28.759328 179.305261 8.854514 139.495634-16.737389 99.686007 17.385148 99.686007 57.194775v909.934329c0 45.496716 42.653172 68.245075 76.775709 48.340262 45.496716-28.435448 676.763657-429.375262 716.573284-454.967165 34.122537-22.748358 34.122537-76.775709 0-96.680522z"/></svg>`;
-const PAUSE_ICON_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M128 0h253.155556v1024H128V0z m512 0h256v1024h-256V0z"/></svg>`;
-const SPEED_ICON_SVG = `<svg viewBox="0 0 1260 1024" aria-hidden="true"><path fill="currentColor" d="M77.738464 1011.260664l536.872038-462.255925a50.350711 50.350711 0 0 0 0-72.796208L77.738464 12.739336A46.104265 46.104265 0 0 0 0.089175 48.530806v926.331753a46.104265 46.104265 0 0 0 77.649289 36.398105z m629.687204 0l536.872038-462.255925a49.744076 49.744076 0 0 0 0-72.796208L707.425668 12.739336a46.104265 46.104265 0 0 0-77.649289 36.398105v925.725118a46.104265 46.104265 0 0 0 77.649289 36.398105z"/></svg>`;
-const PLAY_MODE_SHUFFLE_SVG = `<svg viewBox="0 0 1170 1024" aria-hidden="true"><path fill="currentColor" d="M950.616094 1023.999269a73.124315 73.124315 0 0 1-51.918264-21.206052 73.124315 73.124315 0 0 1 0-103.836527l21.937295-21.206051H731.243149a73.124315 73.124315 0 0 1-62.155668-34.368428L325.403201 292.75612H73.124315a73.124315 73.124315 0 0 1 0-146.24863h292.49726a73.124315 73.124315 0 0 1 62.155667 34.368428l121.386363 193.779434 119.923876-193.779434A73.124315 73.124315 0 0 1 731.243149 146.50749h189.391976l-21.937295-21.206051A73.124315 73.124315 0 0 1 1002.534357 21.464911l146.24863 146.24863a73.124315 73.124315 0 0 1 0 103.836527l-146.24863 146.24863a73.124315 73.124315 0 0 1-103.836527-103.836527l21.937295-21.206051h-146.24863l-138.936198 219.372944 136.011225 219.372945h146.24863l-21.937294-21.206051a73.124315 73.124315 0 0 1 103.836527-103.836527l146.24863 146.248629a73.124315 73.124315 0 0 1 0 103.836528l-146.24863 146.248629A73.124315 73.124315 0 0 1 950.616094 1023.999269z m-584.994519-146.24863H73.124315a73.124315 73.124315 0 0 1 0-146.24863h253.010129l25.593511-40.218373a73.124315 73.124315 0 0 1 122.848849 79.705503l-47.530805 73.124315A73.124315 73.124315 0 0 1 365.621575 877.750639z"/></svg>`;
-const PLAY_MODE_LIST_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M569.6 448H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c-6.4-25.6-25.6-44.8-51.2-44.8z m0 332.8H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c-6.4-25.6-25.6-44.8-51.2-44.8zM44.8 243.2H576c25.6 0 44.8-19.2 44.8-44.8v-44.8c0-25.6-19.2-44.8-44.8-44.8H44.8c-25.6 0-44.8 19.2-44.8 44.8v44.8c0 25.6 19.2 44.8 44.8 44.8z m684.8-134.4c-25.6 0-44.8 19.2-38.4 44.8v716.8c0 25.6 19.2 44.8 44.8 44.8h32c12.8 0 32-6.4 38.4-25.6l217.6-236.8c0-25.6-19.2-44.8-44.8-44.8h-166.4V153.6c0-25.6-19.2-44.8-44.8-44.8h-38.4z"/></svg>`;
-const PLAY_MODE_SINGLE_SVG = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M449.024 832.512h-52.736c-152.064-25.088-268.288-157.184-268.288-315.904 0-53.248 13.824-102.912 36.864-146.944l39.424 54.272c28.672 39.424 90.112 28.672 103.424-18.432l31.232-112.64 43.008-155.136c10.24-37.376-17.408-73.728-56.32-73.728h-267.264c-47.616 0-74.752 53.76-47.104 92.16l72.192 100.352c-52.224 73.216-83.456 162.816-83.456 260.096 0 224.256 164.352 409.6 378.88 442.88 5.632 1.024 11.776 0.512 16.896 0v1.024h52.736c34.816 0 62.976-28.16 62.976-62.976v-1.536c0.512-35.328-27.648-63.488-62.464-63.488zM1012.736 867.328l-72.192-100.352C992.768 693.76 1024 604.16 1024 507.392c0-224.256-164.352-409.6-378.88-442.88-5.632-1.024-11.776-0.512-16.896 0v-1.024h-52.736c-34.816 0-62.976 28.16-62.976 62.976v1.536c0 34.816 28.16 62.976 62.976 62.976h52.736C779.776 216.064 896 348.672 896 507.392c0 53.248-13.824 102.912-36.864 146.944l-39.424-54.272c-28.672-39.424-90.112-28.672-103.424 18.432l-31.232 112.64-43.008 155.136c-10.24 37.376 17.408 73.728 56.32 73.728h267.264c47.616-0.512 74.752-54.272 47.104-92.672z"/><path fill="currentColor" d="M554.496 349.184v263.168h-43.008v-211.456c-15.872 14.336-35.84 25.088-59.904 32.256v-43.008c11.776-3.072 24.576-8.192 37.376-15.36 13.312-8.192 24.576-16.384 33.28-25.6h32.256z"/><path fill="currentColor" d="M590.336 648.192h-114.688v-185.344l-13.824 4.608-46.08 13.824v-118.784l26.624-7.168c9.216-2.56 18.944-6.144 28.16-11.776 11.776-7.168 19.968-13.312 25.6-19.456l10.752-11.264h83.456v335.36z"/></svg>`;
-const PLAY_MODE_LABELS = {
-  shuffle: "随机播放",
-  list: "顺序播放",
-  single: "单曲循环",
-};
-const LEVEL_HEART_SVG = `<svg class="info-level-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-const LEVEL_FILTER_HEART_SVG = `<svg class="level-filter-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-const LEVEL_SLOT_COUNT = 6;
-const LEVEL_MAX = 5;
-const INFO_DEFAULT_NAME = "歌曲名称";
-/** 筛选「暂无」：作者/歌手/分类为空 */
-const FILTER_NONE = "__filter_none__";
-const FILTER_CATEGORY_LEGACY_UNCATEGORIZED = "未分类";
-
-/** 切歌时主题/封面渐变时长（与旧版一致） */
-const MEDIA_TRANSITION_MS = 1200;
-const THEME_RAPID_WINDOW_MS = 450;
-const DEFAULT_THEME = { bgHex: "#ffffff", fgHex: "#000000" };
-
-let themeAnimFrame = 0;
-let themeApplyToken = 0;
-let themeSwitchTimes = [];
-let coverTransitionToken = 0;
-let lastCoverSrc = null;
-
-const RGB_WHITE = { r: 255, g: 255, b: 255 };
-const RGB_BLACK = { r: 0, g: 0, b: 0 };
-
-/* ---------- 主题 ---------- */
-
-function invertHex(hex) {
-  const clean = String(hex || "").replace("#", "");
-  if (clean.length !== 6) return "#ffffff";
-  const num = parseInt(clean, 16);
-  const r = (num >> 16) & 255;
-  const g = (num >> 8) & 255;
-  const b = num & 255;
-  let ir = 255 - r;
-  let ig = 255 - g;
-  let ib = 255 - b;
-  const lumSrc = 0.299 * r + 0.587 * g + 0.114 * b;
-  const lumInv = 0.299 * ir + 0.587 * ig + 0.114 * ib;
-  const minDiff = 60;
-  if (Math.abs(lumSrc - lumInv) < minDiff) {
-    const needMoreBright = lumSrc < 128;
-    const mixFactor = 0.25;
-    if (needMoreBright) {
-      ir = Math.round(ir * (1 - mixFactor) + 255 * mixFactor);
-      ig = Math.round(ig * (1 - mixFactor) + 255 * mixFactor);
-      ib = Math.round(ib * (1 - mixFactor) + 255 * mixFactor);
-    } else {
-      ir = Math.round(ir * (1 - mixFactor));
-      ig = Math.round(ig * (1 - mixFactor));
-      ib = Math.round(ib * (1 - mixFactor));
-    }
-  }
-  return U.rgbToHex(ir, ig, ib);
+function scrollPlaylistTo(top) {
+  const scrollBox = dom.playlistGrid;
+  if (!scrollBox) return;
+  scrollBox.scrollTo({ top, behavior: "smooth" });
 }
 
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function scrollPlaylistToTop() {
+  scrollPlaylistTo(0);
 }
 
-function cancelThemeAnimation() {
-  if (themeAnimFrame) {
-    cancelAnimationFrame(themeAnimFrame);
-    themeAnimFrame = 0;
-  }
+function scrollPlaylistToBottom() {
+  const scrollBox = dom.playlistGrid;
+  if (!scrollBox) return;
+  scrollPlaylistTo(scrollBox.scrollHeight);
 }
 
-function noteThemeSongSwitch() {
-  const now = performance.now();
-  themeApplyToken += 1;
-  themeSwitchTimes.push(now);
-  themeSwitchTimes = themeSwitchTimes.filter((t) => now - t < THEME_RAPID_WINDOW_MS);
-  cancelThemeAnimation();
-  return themeApplyToken;
+function syncToastPosition() {
+  const toast = dom.toast;
+  if (!toast) return;
+  const btn =
+    dom.btnPlayPause ||
+    document.querySelector(".player-zone-controls .btn-icon");
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const bottom = Math.max(0, window.innerHeight - rect.bottom);
+  toast.style.bottom = `${bottom}px`;
 }
 
-function isRapidSongSwitching() {
-  return themeSwitchTimes.length >= 2;
-}
-
-function isCurrentVideo(v) {
-  if (!v || state.currentIndex < 0) return false;
-  const cur = state.videos[state.currentIndex];
-  return !!cur && cur.id === v.id;
-}
-
-function themeColorsEqual(bgHex, fgHex) {
-  return theme.themeColor === bgHex && theme.componentColor === fgHex;
-}
-
-function applyThemeImmediate(themeColor, componentColor) {
-  theme.themeColor = themeColor;
-  theme.componentColor = componentColor;
-  dom.root.style.setProperty("--theme-color", themeColor);
-  dom.root.style.setProperty("--component-color", componentColor);
-  updateColorPreviews();
-  if (state.specialEffectsEnabled) {
-    window.Special?.onThemeChanged?.();
-    window.SplitColor?.onThemeChanged?.();
-  }
-}
-
-function animateThemeTransition(toBgHex, toFgHex, duration = MEDIA_TRANSITION_MS) {
-  cancelThemeAnimation();
-  const fromBg = U.parseHexColor(theme.themeColor, RGB_WHITE);
-  const fromFg = U.parseHexColor(theme.componentColor, RGB_BLACK);
-  const toBg = U.parseHexColor(toBgHex, RGB_WHITE);
-  const toFg = U.parseHexColor(toFgHex, RGB_BLACK);
-  if (
-    fromBg.r === toBg.r &&
-    fromBg.g === toBg.g &&
-    fromBg.b === toBg.b &&
-    fromFg.r === toFg.r &&
-    fromFg.g === toFg.g &&
-    fromFg.b === toFg.b
-  ) {
-    applyThemeImmediate(toBgHex, toFgHex);
-    return;
-  }
-  const start = performance.now();
-  const step = (now) => {
-    const t = Math.min(1, (now - start) / duration);
-    const e = easeInOutCubic(t);
-    const bg = U.rgbToHex(
-      Math.round(fromBg.r + (toBg.r - fromBg.r) * e),
-      Math.round(fromBg.g + (toBg.g - fromBg.g) * e),
-      Math.round(fromBg.b + (toBg.b - fromBg.b) * e),
-    );
-    const fg = U.rgbToHex(
-      Math.round(fromFg.r + (toFg.r - fromFg.r) * e),
-      Math.round(fromFg.g + (toFg.g - fromFg.g) * e),
-      Math.round(fromFg.b + (toFg.b - fromFg.b) * e),
-    );
-    applyThemeImmediate(bg, fg);
-    if (t < 1) {
-      themeAnimFrame = requestAnimationFrame(step);
-    } else {
-      themeAnimFrame = 0;
-    }
-  };
-  themeAnimFrame = requestAnimationFrame(step);
-}
-
-function applyTheme(themeColor, componentColor, options = {}) {
-  const { animate = false, duration = MEDIA_TRANSITION_MS } = options;
-  if (!animate) {
-    applyThemeImmediate(themeColor, componentColor);
-    return;
-  }
-  animateThemeTransition(themeColor, componentColor, duration);
-}
-
-function getDominantThemeFromImage(img) {
-  try {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const size = 64;
-    canvas.width = size;
-    canvas.height = size;
-    ctx.drawImage(img, 0, 0, size, size);
-    const data = ctx.getImageData(0, 0, size, size).data;
-    const quantizeLevel = 16;
-    const colorMap = new Map();
-    let opaqueCount = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i + 3] < 128) continue;
-      opaqueCount++;
-      const qR = Math.floor(data[i] / quantizeLevel) * quantizeLevel;
-      const qG = Math.floor(data[i + 1] / quantizeLevel) * quantizeLevel;
-      const qB = Math.floor(data[i + 2] / quantizeLevel) * quantizeLevel;
-      const key = `${qR},${qG},${qB}`;
-      colorMap.set(key, (colorMap.get(key) || 0) + 1);
-    }
-    if (opaqueCount === 0) return { ...DEFAULT_THEME };
-    let maxCount = 0;
-    let dominantColor = null;
-    colorMap.forEach((count, key) => {
-      if (count > maxCount) {
-        maxCount = count;
-        dominantColor = key;
-      }
-    });
-    if (dominantColor) {
-      const [r, g, b] = dominantColor.split(",").map(Number);
-      const bgHex = U.rgbToHex(r, g, b);
-      return { bgHex, fgHex: invertHex(bgHex) };
-    }
-    return { ...DEFAULT_THEME };
-  } catch {
-    return { ...DEFAULT_THEME };
-  }
-}
-
-function getThemeForVideo(v, img, hasCover) {
-  const bg = U.normalizeHexColor(v?.themeBg);
-  const fg = U.normalizeHexColor(v?.themeFg);
-  if (bg && fg) return { bgHex: bg, fgHex: fg };
-  if (hasCover && img) return getDominantThemeFromImage(img);
-  return { bgHex: theme.themeColor, fgHex: theme.componentColor };
-}
-
-function applyThemeForVideo(v, img, hasCover, options = {}) {
-  const { themeToken, animate = true, duration = MEDIA_TRANSITION_MS } = options;
-  if (themeToken != null && themeToken !== themeApplyToken) return;
-  if (v != null && !isCurrentVideo(v)) return;
-  const t = getThemeForVideo(v, img, hasCover);
-  const same = themeColorsEqual(t.bgHex, t.fgHex);
-  const useAnimate = animate && !isRapidSongSwitching() && !same;
-  applyTheme(t.bgHex, t.fgHex, { animate: useAnimate, duration });
-}
-
-function loadImageElement(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
+/** 清除旧版 JS 对齐残留；三栏操作键改由 CSS --ctrl-chrome-bottom 对齐 */
+function syncSideControlAlignment() {
+  [dom.playlistControls, dom.infoControls].forEach((wrap) => {
+    if (!wrap) return;
+    wrap.style.bottom = "";
+    wrap.style.top = "";
+    wrap.style.transform = "";
   });
 }
 
-function drawImageCover(ctx, img, destW, destH) {
-  const iw = img.naturalWidth || img.width;
-  const ih = img.naturalHeight || img.height;
-  if (!iw || !ih) return;
-  const destRatio = destW / destH;
-  const srcRatio = iw / ih;
-  let sx;
-  let sy;
-  let sw;
-  let sh;
-  if (srcRatio > destRatio) {
-    sh = ih;
-    sw = ih * destRatio;
-    sx = (iw - sw) / 2;
-    sy = 0;
-  } else {
-    sw = iw;
-    sh = iw / destRatio;
-    sx = 0;
-    sy = (ih - sh) / 2;
-  }
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, destW, destH);
+function syncBottomChromeAlignment() {
+  syncSideControlAlignment();
+  syncToastPosition();
 }
-
-function drawCoverPixelateFrame(ctx, oldImg, newImg, w, h, t) {
-  ctx.clearRect(0, 0, w, h);
-  drawImageCover(ctx, newImg, w, h);
-  const peak = 0.55;
-  const blurT = t < peak ? t / peak : 1 - (t - peak) / (1 - peak);
-  const block = Math.max(2, Math.round(4 + blurT * 28));
-  const smallW = Math.max(1, Math.ceil(w / block));
-  const smallH = Math.max(1, Math.ceil(h / block));
-  const snap = document.createElement("canvas");
-  snap.width = w;
-  snap.height = h;
-  const snapCtx = snap.getContext("2d");
-  drawImageCover(snapCtx, oldImg, w, h);
-  const off = document.createElement("canvas");
-  off.width = smallW;
-  off.height = smallH;
-  const offCtx = off.getContext("2d");
-  offCtx.drawImage(snap, 0, 0, smallW, smallH);
-  ctx.save();
-  ctx.globalAlpha = Math.max(0, 1 - t);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(off, 0, 0, smallW, smallH, 0, 0, w, h);
-  ctx.restore();
-}
-
-function runCoverTransition(oldImg, newImg, token, duration, onDone) {
-  const box = dom.infoCoverBox;
-  if (!box) return;
-  const w = Math.max(1, box.clientWidth);
-  const h = Math.max(1, box.clientHeight);
-  box.querySelector(".cover-transition-canvas")?.remove();
-
-  const canvas = document.createElement("canvas");
-  canvas.className = "cover-transition-canvas";
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  box.appendChild(canvas);
-
-  const start = performance.now();
-  const frame = (now) => {
-    if (token !== coverTransitionToken) {
-      canvas.remove();
-      return;
-    }
-    const t = Math.min(1, (now - start) / duration);
-    drawCoverPixelateFrame(ctx, oldImg, newImg, w, h, easeInOutCubic(t));
-    if (t < 1) {
-      requestAnimationFrame(frame);
-    } else {
-      canvas.remove();
-      if (token === coverTransitionToken && onDone) onDone();
-    }
-  };
-  requestAnimationFrame(frame);
-}
-
-function mountCoverImageToBox(imgEl, src) {
-  const box = dom.infoCoverBox;
-  if (!box || !imgEl) return;
-  imgEl.src = src;
-  imgEl.alt = "";
-  imgEl.hidden = false;
-  if (!box.contains(imgEl)) {
-    box.appendChild(imgEl);
-  }
-  if (dom.infoCoverPlaceholder) dom.infoCoverPlaceholder.hidden = true;
-}
-
-function setCoverImage(src, options = {}) {
-  const { animate = true, video = null, themeToken } = options;
-  const box = dom.infoCoverBox;
-  const imgEl = dom.infoCoverImg;
-  if (!box || !imgEl) return;
-
-  const targetSrc = src || "";
-  const existingImg =
-    imgEl.parentElement === box && imgEl.complete && imgEl.naturalWidth > 0
-      ? imgEl
-      : box.querySelector("img.info-cover-img");
-  const canAnimate =
-    animate &&
-    existingImg &&
-    existingImg.complete &&
-    existingImg.naturalWidth > 0 &&
-    lastCoverSrc &&
-    lastCoverSrc !== targetSrc &&
-    targetSrc;
-
-  const markCover = () => {
-    lastCoverSrc = targetSrc || null;
-  };
-
-  const finishTheme = (img, hasCover) => {
-    applyThemeForVideo(video, img, hasCover, {
-      themeToken,
-      animate: true,
-      duration: MEDIA_TRANSITION_MS,
-    });
-  };
-
-  if (!targetSrc) {
-    coverTransitionToken++;
-    lastCoverSrc = null;
-    imgEl.removeAttribute("src");
-    imgEl.hidden = true;
-    if (dom.infoCoverPlaceholder) dom.infoCoverPlaceholder.hidden = false;
-    finishTheme(null, false);
-    return;
-  }
-
-  if (!canAnimate) {
-    if (existingImg && lastCoverSrc === targetSrc) {
-      finishTheme(existingImg, true);
-      mountCoverImageToBox(imgEl, targetSrc);
-      return;
-    }
-    coverTransitionToken++;
-    mountCoverImageToBox(imgEl, targetSrc);
-    const done = () => {
-      markCover();
-      finishTheme(imgEl, true);
-    };
-    if (imgEl.complete) done();
-    else {
-      imgEl.onload = done;
-      imgEl.onerror = done;
-    }
-    return;
-  }
-
-  const token = ++coverTransitionToken;
-  const duration = MEDIA_TRANSITION_MS;
-  const oldSrc = existingImg.currentSrc || existingImg.src;
-  Promise.all([loadImageElement(oldSrc), loadImageElement(targetSrc)])
-    .then(([oldLoaded, newLoaded]) => {
-      if (token !== coverTransitionToken) return;
-      applyThemeForVideo(video, newLoaded, true, {
-        themeToken,
-        animate: true,
-        duration,
-      });
-      runCoverTransition(oldLoaded, newLoaded, token, duration, () => {
-        if (token !== coverTransitionToken) return;
-        mountCoverImageToBox(imgEl, targetSrc);
-        markCover();
-      });
-    })
-    .catch(() => {
-      if (token !== coverTransitionToken) return;
-      mountCoverImageToBox(imgEl, targetSrc);
-      markCover();
-      finishTheme(imgEl, true);
-    });
-}
-
-function updateColorPreviews() {
-  if (dom.infoThemePreview) {
-    dom.infoThemePreview.style.background = theme.themeColor;
-  }
-  if (dom.infoComponentPreview) {
-    dom.infoComponentPreview.style.background = theme.componentColor;
-  }
-}
-
-/* ---------- 工具 ---------- */
 
 function showToast(msg) {
-  if (!dom.toast) return;
+  if (!dom.toast) {
+    console.log(msg);
+    return;
+  }
+  syncBottomChromeAlignment();
   dom.toast.textContent = msg;
   dom.toast.classList.add("show");
   window.clearTimeout(showToast._t);
   showToast._t = window.setTimeout(() => dom.toast.classList.remove("show"), 2000);
 }
 
-function parseBilingual(text) {
-  const s = String(text ?? "").trim();
-  const fw = s.match(/^(.+?)（([^）]+)）$/);
-  if (fw) {
-    return { foreign: fw[1].trim(), chinese: fw[2].trim(), hasPair: true };
+function setProgressUi(pct) {
+  const p = Math.min(100, Math.max(0, pct));
+  const n = String(p);
+  if (dom.progressTrack) {
+    dom.progressTrack.style.setProperty("--progress-pct", n);
+    dom.progressTrack.setAttribute("aria-valuenow", String(Math.round(p)));
   }
-  const aw = s.match(/^(.+?)\(([^)]+)\)$/);
-  if (aw) {
-    return { foreign: aw[1].trim(), chinese: aw[2].trim(), hasPair: true };
-  }
-  return { foreign: s, chinese: s, hasPair: false };
+  dom.progressWrap?.style.setProperty("--progress-pct", n);
 }
 
-function displayLabel(text, preferChinese) {
-  const p = parseBilingual(text);
-  if (!p.hasPair) return p.foreign;
-  const useChinese =
-    preferChinese !== undefined ? preferChinese : state.translateMode;
-  return useChinese ? p.chinese : p.foreign;
-}
-
-/** 展示用文案：编辑模式显示原文；非编辑时随翻译模式切换中/外文 */
-function formatUserFacingText(text) {
-  if (infoUi.editing) return String(text ?? "");
-  return displayLabel(text);
-}
-
-function getInfoNameCopyText(v = getCurrentVideo()) {
-  if (!v) return "";
-  const raw = String(v.title || v.titleDisplay || "").trim();
-  if (!raw) return "";
-  if (infoUi.editing) return raw;
-  const p = parseBilingual(raw);
-  if (!p.hasPair) return p.foreign;
-  return state.translateMode ? p.chinese : p.foreign;
-}
-
-async function copyInfoNameToClipboard() {
-  const text = getInfoNameCopyText();
-  if (!text) {
-    showToast("无可复制内容");
+function syncProgressFromVideo() {
+  const v = dom.videoEl;
+  if (!v || !Number.isFinite(v.duration) || v.duration <= 0) {
+    setProgressUi(0);
+    syncActiveLyric();
     return;
   }
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand("copy");
-    } finally {
-      ta.remove();
-    }
-  }
-  showToast("已复制");
+  setProgressUi((v.currentTime / v.duration) * 100);
+  syncActiveLyric();
 }
 
-function applyTranslateModeUi() {
-  dom.btnTranslate?.setAttribute(
-    "aria-pressed",
-    state.translateMode ? "true" : "false",
+function seekByClientX(clientX) {
+  const v = dom.videoEl;
+  const track = dom.progressTrack;
+  if (!v || !track || !Number.isFinite(v.duration) || v.duration <= 0) return;
+  const rect = track.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  v.currentTime = ratio * v.duration;
+  syncProgressFromVideo();
+}
+
+function formatMediaTime(sec) {
+  if (!Number.isFinite(sec) || sec < 0) return "0:00";
+  const total = Math.floor(sec);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function progressRatioFromClientX(clientX) {
+  const track = dom.progressTrack;
+  if (!track) return 0;
+  const rect = track.getBoundingClientRect();
+  if (rect.width <= 0) return 0;
+  return Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+}
+
+function updateProgressTimeTip(clientX) {
+  const tip = dom.progressTimeTip;
+  const track = dom.progressTrack;
+  const v = dom.videoEl;
+  if (!tip || !track) return;
+  const ratio = progressRatioFromClientX(clientX);
+  const dur = v && Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0;
+  tip.textContent = formatMediaTime(ratio * dur);
+  tip.hidden = false;
+  tip.setAttribute("aria-hidden", "false");
+  const rect = track.getBoundingClientRect();
+  const x = Math.min(rect.width, Math.max(0, clientX - rect.left));
+  tip.style.left = `${x}px`;
+}
+
+function hideProgressTimeTip() {
+  const tip = dom.progressTimeTip;
+  if (!tip) return;
+  tip.hidden = true;
+  tip.setAttribute("aria-hidden", "true");
+}
+
+function bilingualSearchHaystack(text) {
+  const raw = String(text ?? "").trim();
+  if (!raw) return [];
+  const p = parseBilingual(raw);
+  const parts = [raw, p.foreign, p.chinese];
+  return [...new Set(parts.map((x) => String(x).trim().toLowerCase()).filter(Boolean))];
+}
+
+function songMatchesSearchQuery(song, q) {
+  if (!q) return true;
+  const titleParts = bilingualSearchHaystack(song.titleDisplay || song.title);
+  if (titleParts.some((p) => p.includes(q))) return true;
+
+  for (const author of song.authors || []) {
+    if (bilingualSearchHaystack(author).some((p) => p.includes(q))) return true;
+  }
+  for (const singer of song.roles || []) {
+    if (bilingualSearchHaystack(singer).some((p) => p.includes(q))) return true;
+  }
+  return false;
+}
+
+function getVisibleSongs() {
+  const q = state.searchQuery.trim().toLowerCase();
+  return state.songs.filter((s) => {
+    if (!songPassesFilters(s)) return false;
+    return songMatchesSearchQuery(s, q);
+  });
+}
+
+function isSongPlaying(index) {
+  return (
+    index === state.currentIndex &&
+    !!dom.videoEl &&
+    !!dom.videoEl.src &&
+    !dom.videoEl.paused &&
+    !dom.videoEl.ended
   );
 }
 
-function refreshTranslateDisplay() {
+function getPlayIconSvg(index) {
+  return isSongPlaying(index) ? PAUSE_ICON_SVG : PLAY_ICON_SVG;
+}
+
+function renderPlaylist() {
+  const grid = dom.playlistGrid;
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  const songs = getVisibleSongs();
+  if (!songs.length) {
+    const empty = document.createElement("div");
+    empty.className = "playlist-empty";
+    empty.textContent = "暂无歌曲";
+    grid.appendChild(empty);
+    return;
+  }
+
+  songs.forEach((song) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "song-card";
+    card.dataset.id = String(song.id);
+    if (song.id === state.currentIndex) card.classList.add("is-current");
+
+    const cover = document.createElement("div");
+    cover.className = "song-card-cover";
+    if (song.coverUrl) {
+      const img = document.createElement("img");
+      img.src = song.coverUrl;
+      img.alt = "";
+      cover.appendChild(img);
+    }
+
+    const icon = document.createElement("span");
+    icon.className = "song-card-play-icon";
+    icon.innerHTML = getPlayIconSvg(song.id);
+    cover.appendChild(icon);
+
+    const title = document.createElement("div");
+    title.className = "song-card-title";
+    title.textContent = formatUserFacingText(song.titleDisplay || song.title);
+
+    card.append(cover, title);
+    card.addEventListener("click", () => onSongCardClick(song.id));
+    grid.appendChild(card);
+  });
+}
+
+function setVideoSource(url) {
+  const main = dom.videoEl;
+  if (!main) return;
+  if (url) {
+    main.src = url;
+    main.load();
+  } else {
+    main.removeAttribute("src");
+    main.load();
+  }
+}
+
+function playSongAt(index) {
+  if (index < 0 || index >= state.songs.length) return;
+  const song = state.songs[index];
+  state.currentIndex = index;
+  if (song.url) {
+    setVideoSource(song.url);
+    applyPlaybackRate();
+    applyVolume();
+    resumeAudioContext();
+    dom.videoEl?.play().catch(() => {});
+  }
+  renderPlaylist();
+  syncPlayPauseButton();
+  syncProgressFromVideo();
+  syncInfoEditSessionToCurrentSong();
   renderInfoView();
+  ensureLyricsLoaded();
+}
+
+function onSongCardClick(index) {
+  if (index < 0 || index >= state.songs.length) return;
+  if (state.currentIndex === index) {
+    togglePlayPause();
+    renderPlaylist();
+    return;
+  }
+  playSongAt(index);
+}
+
+function openPlaylistSearch() {
+  if (!dom.playlistTitleBtn || !dom.playlistSearch) return;
+  dom.playlistTitleBtn.hidden = true;
+  dom.playlistSearch.hidden = false;
+  dom.playlistSearch.value = state.searchQuery;
+  dom.playlistSearch.focus();
+  dom.playlistSearch.select();
+}
+
+function closePlaylistSearch() {
+  if (!dom.playlistTitleBtn || !dom.playlistSearch) return;
+  state.searchQuery = "";
+  dom.playlistSearch.value = "";
+  dom.playlistSearch.hidden = true;
+  dom.playlistTitleBtn.hidden = false;
   renderPlaylist();
 }
 
-function toggleTranslateMode() {
-  state.translateMode = !state.translateMode;
-  applyTranslateModeUi();
-  refreshTranslateDisplay();
-  showToast(state.translateMode ? "已进入翻译模式" : "已退出翻译模式");
+function toggleMidChromeMode() {
+  state.midChromeMode = state.midChromeMode === "viz" ? "lyrics" : "viz";
+  syncMidChromeModeUi();
+  if (state.midChromeMode === "lyrics") {
+    ensureLyricsLoaded().then(() => syncActiveLyric(true));
+  }
+  syncBottomChromeAlignment();
 }
 
-const playerHooks = {
-  getAnalyser() {
-    return analyser;
-  },
-  getFrequencyData() {
-    if (!analyser || !analyserDataArray) return null;
-    analyser.getByteFrequencyData(analyserDataArray);
-    return analyserDataArray;
-  },
-  getVideo() {
-    return dom.videoEl;
-  },
-  getCurrentVideo() {
-    return getCurrentVideo();
-  },
-  getTheme() {
-    return {
-      themeColor: theme.themeColor,
-      componentColor: theme.componentColor,
-    };
-  },
-  getVisualizerCanvas() {
-    return dom.visualizerCanvas;
-  },
-};
-
-function applySpecialEffectsUi() {
-  dom.btnSpecialFx?.setAttribute(
-    "aria-pressed",
-    state.specialEffectsEnabled ? "true" : "false",
-  );
+function syncMidChromeModeUi() {
+  const isLyrics = state.midChromeMode === "lyrics";
+  dom.playerZoneViz?.classList.toggle("is-lyrics", isLyrics);
+  if (dom.vizLyrics) dom.vizLyrics.hidden = !isLyrics;
+  if (dom.btnVizLyrics) {
+    dom.btnVizLyrics.innerHTML = isLyrics ? VIZ_MODE_VIZ_SVG : VIZ_MODE_LYRICS_SVG;
+    dom.btnVizLyrics.title = isLyrics ? "可视化" : "歌词";
+    dom.btnVizLyrics.setAttribute("aria-label", isLyrics ? "可视化" : "歌词");
+    dom.btnVizLyrics.setAttribute("aria-pressed", isLyrics ? "true" : "false");
+  }
+  if (isLyrics) syncActiveLyric(true);
 }
 
-function syncSplitColor() {
-  const v = state.specialEffectsEnabled ? getCurrentVideo() : null;
-  window.SplitColor?.applyForVideo?.(v);
-  buildAllFilterPanels();
+function getCurrentSong() {
+  if (state.currentIndex < 0) return null;
+  return state.songs[state.currentIndex] || null;
 }
 
-function refreshMediaEffects({ includeSpecial = true } = {}) {
-  const v = state.specialEffectsEnabled ? getCurrentVideo() : null;
-  if (includeSpecial && state.specialEffectsEnabled) window.Special?.onVideoChanged?.(v);
-  syncSplitColor();
-  window.Special?.syncVisualizer?.(v, { analyser, resizeVisualizerCanvas });
-  window.Special?.syncProgressEffect?.(v);
+function parseLrcTimestamp(min, sec, frac) {
+  const m = Number(min) || 0;
+  const s = Number(sec) || 0;
+  const f = String(frac || "0");
+  let sub = 0;
+  if (f.length <= 2) sub = Number(f.padEnd(2, "0")) / 100;
+  else sub = Number(f.slice(0, 3).padEnd(3, "0")) / 1000;
+  return m * 60 + s + sub;
 }
 
-function syncSpecialEffects() {
-  window.Special?.onVideoChanged?.(getCurrentVideo());
+function timeKey(t) {
+  return (Math.round(t * 1000) / 1000).toFixed(3);
 }
 
-function syncVisualizerMode() {
-  const v = state.specialEffectsEnabled ? getCurrentVideo() : null;
-  window.Special?.syncVisualizer?.(v, { analyser, resizeVisualizerCanvas });
+/**
+ * 解析「上半原文 + 下半同时间轴翻译」的双语 LRC
+ * 时间戳支持 [mm:ss.xx] / [mm:ss:xx] / [mm:ss.xxx] / [mm:ss:xxx]
+ * 同时间戳多行按出现顺序配对；下半允许空翻译占位
+ * @returns {{ time: number, orig: string, trans: string }[]}
+ */
+function parseBilingualLrc(text) {
+  // 小数部分可用 . 或 : 分隔，如 [02:08.91] / [02:08:91]
+  const lineRe = /^\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\](.*)$/;
+  const entries = [];
+  String(text || "")
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .forEach((raw) => {
+      const line = raw.trimEnd();
+      if (!line.trim()) return;
+      if (/^\[[a-zA-Z]+:/i.test(line.trim())) return;
+      const m = line.trim().match(lineRe);
+      if (!m) return;
+      const content = String(m[4] || "").trim();
+      entries.push({
+        time: parseLrcTimestamp(m[1], m[2], m[3]),
+        text: content,
+      });
+    });
+
+  if (!entries.length) return [];
+
+  let splitAt = -1;
+  for (let i = 1; i < entries.length; i++) {
+    if (entries[i].time + 0.001 < entries[i - 1].time) {
+      splitAt = i;
+      break;
+    }
+  }
+
+  if (splitAt < 0) {
+    // 无下半：同戳后出现的视为翻译
+    const queues = new Map();
+    entries.forEach((e) => {
+      const key = timeKey(e.time);
+      if (!queues.has(key)) queues.set(key, []);
+      queues.get(key).push(e.text);
+    });
+    const out = [];
+    queues.forEach((texts, key) => {
+      const time = Number(key);
+      const orig = texts[0] || "";
+      const trans = texts[1] || "";
+      if (!orig && !trans) return;
+      out.push({ time, orig, trans });
+      for (let i = 2; i < texts.length; i += 2) {
+        out.push({ time, orig: texts[i] || "", trans: texts[i + 1] || "" });
+      }
+    });
+    return out.sort((a, b) => a.time - b.time || 0);
+  }
+
+  const orig = entries.slice(0, splitAt);
+  const transQueues = new Map();
+  entries.slice(splitAt).forEach((e) => {
+    const key = timeKey(e.time);
+    if (!transQueues.has(key)) transQueues.set(key, []);
+    transQueues.get(key).push(e.text);
+  });
+
+  return orig
+    .map((o) => {
+      const q = transQueues.get(timeKey(o.time));
+      const trans = q && q.length ? q.shift() : "";
+      return { time: o.time, orig: o.text, trans: trans || "" };
+    })
+    .filter((x) => x.orig || x.trans);
 }
 
-function syncProgressSpecialEffects() {
-  window.Special?.syncProgressEffect?.(
-    state.specialEffectsEnabled ? getCurrentVideo() : null,
-  );
+function looksLikeMojibake(text) {
+  if (!text) return true;
+  const bad = (text.match(/\uFFFD/g) || []).length;
+  return bad > 0 && bad / Math.max(1, text.length) > 0.002;
 }
 
-function toggleSpecialEffects() {
-  state.specialEffectsEnabled = !state.specialEffectsEnabled;
-  applySpecialEffectsUi();
-  window.Special?.setEnabled?.(state.specialEffectsEnabled);
-  refreshMediaEffects();
-  syncPlayPauseButton();
-  showToast(state.specialEffectsEnabled ? "已开启特殊效果" : "已关闭特殊效果");
+async function decodeTextBuffer(buf) {
+  const encodings = ["utf-8", "gbk", "gb18030", "shift_jis"];
+  let best = "";
+  for (const enc of encodings) {
+    try {
+      const text = new TextDecoder(enc, { fatal: false }).decode(buf);
+      if (!looksLikeMojibake(text)) return text;
+      if (!best) best = text;
+    } catch {
+      /* encoding unsupported */
+    }
+  }
+  return best || new TextDecoder("utf-8").decode(buf);
+}
+
+async function readLrcTextFromFile(file) {
+  const buf = await file.arrayBuffer();
+  return decodeTextBuffer(buf);
+}
+
+async function readLrcTextFromUrl(url) {
+  const res = await fetch(url);
+  const buf = await res.arrayBuffer();
+  return decodeTextBuffer(buf);
+}
+
+function clearLyricsState() {
+  state.lyrics = [];
+  state.lyricsSongId = -1;
+  state.activeLyricIndex = -1;
+  syncActiveLyric(true);
+}
+
+function renderLyricsView() {
+  // 中间栏只显示当前句，由 syncActiveLyric 刷新
+  syncActiveLyric(true);
+}
+
+function findActiveLyricIndex(currentTime) {
+  const lines = state.lyrics;
+  if (!lines.length || !Number.isFinite(currentTime)) return -1;
+  let idx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].time <= currentTime + 0.02) idx = i;
+    else break;
+  }
+  return idx;
+}
+
+function syncActiveLyric(force = false) {
+  const t = dom.videoEl?.currentTime ?? 0;
+  const idx = findActiveLyricIndex(t);
+  if (idx === state.activeLyricIndex && !force) return;
+  state.activeLyricIndex = idx;
+
+  const empty = dom.vizLyricsEmpty;
+  const current = dom.vizLyricsCurrent;
+  const origEl = dom.vizLyricsOrig;
+  const transEl = dom.vizLyricsTrans;
+  if (!empty || !current || !origEl || !transEl) return;
+
+  const hasLyrics = state.lyrics.length > 0;
+  if (!hasLyrics) {
+    empty.hidden = false;
+    empty.textContent = "暂无歌词";
+    current.hidden = true;
+    origEl.textContent = "";
+    transEl.textContent = "";
+    return;
+  }
+
+  const line = idx >= 0 ? state.lyrics[idx] : null;
+  if (!line || (!line.orig && !line.trans)) {
+    empty.hidden = false;
+    empty.textContent = "♪";
+    current.hidden = true;
+    origEl.textContent = "";
+    transEl.textContent = "";
+    return;
+  }
+
+  empty.hidden = true;
+  current.hidden = false;
+  origEl.textContent = line.orig || "";
+  transEl.textContent = line.trans || "";
+}
+
+async function ensureLyricsLoaded() {
+  const song = getCurrentSong();
+  if (!song) {
+    clearLyricsState();
+    renderLyricsView();
+    return;
+  }
+  if (state.lyricsSongId === song.id) return;
+
+  const token = ++state.lyricsLoadToken;
+  let text = song.lrcText || "";
+  if (!text && song.lrcUrl) {
+    try {
+      text = await readLrcTextFromUrl(song.lrcUrl);
+      song.lrcText = text;
+    } catch (e) {
+      console.error("读取歌词失败：", e);
+      text = "";
+    }
+  }
+
+  if (token !== state.lyricsLoadToken) return;
+  state.lyricsSongId = song.id;
+  state.lyrics = text ? parseBilingualLrc(text) : [];
+  state.activeLyricIndex = -1;
+  renderLyricsView();
+}
+
+function normalizeHexColor(val) {
+  const s = String(val ?? "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+  if (/^#[0-9a-fA-F]{3}$/.test(s)) {
+    return `#${s[1]}${s[1]}${s[2]}${s[2]}${s[3]}${s[3]}`.toLowerCase();
+  }
+  return "";
+}
+
+function updateColorPreviews(bgHex, fgHex) {
+  const bg = bgHex || state.themeColor;
+  const fg = fgHex || state.componentColor;
+  if (dom.infoThemePreview) {
+    dom.infoThemePreview.style.background = bg;
+    dom.infoThemePreview.title = `背景色 ${bg}`;
+  }
+  if (dom.infoComponentPreview) {
+    dom.infoComponentPreview.style.background = fg;
+    dom.infoComponentPreview.title = `组件色 ${fg}`;
+  }
+}
+
+function applyTheme(themeColor, componentColor) {
+  const bg =
+    normalizeHexColor(themeColor) ||
+    state.themeColor ||
+    DEFAULT_THEME.bgHex;
+  const fg =
+    normalizeHexColor(componentColor) ||
+    state.componentColor ||
+    DEFAULT_THEME.fgHex;
+  state.themeColor = bg;
+  state.componentColor = fg;
+  document.documentElement.style.setProperty("--theme-color", bg);
+  document.documentElement.style.setProperty("--component-color", fg);
+  updateColorPreviews(bg, fg);
+}
+
+function applyThemeForSong(song) {
+  const bg = normalizeHexColor(song?.themeBg);
+  const fg = normalizeHexColor(song?.themeFg);
+  if (bg && fg) {
+    applyTheme(bg, fg);
+    return;
+  }
+  applyTheme(DEFAULT_THEME.bgHex, DEFAULT_THEME.fgHex);
+}
+
+function renderChips(container, items, kind) {
+  if (!container) return;
+  container.innerHTML = "";
+  const list = (items || []).map((s) => String(s).trim()).filter(Boolean);
+  const set =
+    kind === "category"
+      ? filterSelection.category
+      : kind === "author"
+        ? filterSelection.author
+        : kind === "role"
+          ? filterSelection.role
+          : null;
+
+  if (!list.length) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "info-chip is-empty";
+    btn.textContent = "无";
+    if (set?.has(FILTER_NONE)) btn.classList.add("is-selected");
+    btn.addEventListener("click", () => {
+      if (infoUi.editing || !kind) return;
+      toggleFilterValue(kind, FILTER_NONE);
+    });
+    container.appendChild(btn);
+    return;
+  }
+
+  list.forEach((raw) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "info-chip";
+    btn.textContent = formatUserFacingText(raw);
+    const key = String(raw).trim();
+    if (set?.has(key)) btn.classList.add("is-selected");
+    btn.addEventListener("click", () => {
+      if (infoUi.editing || !kind) return;
+      toggleFilterValue(kind, key);
+    });
+    container.appendChild(btn);
+  });
+}
+
+function renderLevelHearts(level) {
+  if (!dom.infoLevel) return;
+  const lv = normalizeLevel(level);
+  dom.infoLevel.innerHTML = "";
+  for (let i = 1; i <= LEVEL_MAX; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "info-level-heart-btn";
+    btn.setAttribute("aria-label", `喜爱 ${i} 级`);
+    btn.innerHTML = LEVEL_HEART_SVG;
+    const svg = btn.querySelector(".info-level-heart");
+    if (svg && i <= lv) svg.classList.add("is-on");
+    btn.addEventListener("click", () => {
+      if (!infoUi.editing || !infoUi.editWork) return;
+      infoUi.editWork.level = i;
+      renderLevelHearts(i);
+    });
+    dom.infoLevel.appendChild(btn);
+  }
 }
 
 function splitByComma(val) {
@@ -715,12 +796,470 @@ function splitByComma(val) {
 }
 
 function joinByComma(arr) {
-  return [...arr].join("，");
+  return [...(arr || [])].join("，");
 }
 
-const MEDIA_EXTS = [".mp4", ".mp3", ".flac"];
-const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif"];
-const LRC_EXT = ".lrc";
+function cloneSongMeta(v) {
+  return {
+    categories: [...(v.categories || [])],
+    authors: [...(v.authors || [])],
+    roles: [...(v.roles || [])],
+    level: normalizeLevel(v?.level),
+    themeBg: v.themeBg || "",
+    themeFg: v.themeFg || "",
+  };
+}
+
+function getInfoEditMeta() {
+  const v = getCurrentSong();
+  if (!v) return null;
+  if (infoUi.editing && infoUi.editWork) return infoUi.editWork;
+  return v;
+}
+
+function applySongMetaToSong(v, meta) {
+  if (!v || !meta) return;
+  v.categories = [...(meta.categories || [])];
+  v.authors = [...(meta.authors || [])];
+  v.roles = [...(meta.roles || [])];
+  v.level = normalizeLevel(meta.level);
+  v.themeBg = meta.themeBg || "";
+  v.themeFg = meta.themeFg || "";
+}
+
+function revertInfoEditDraft() {
+  const v = getCurrentSong();
+  const snap = infoUi.editSnapshot;
+  if (!v || !snap) return;
+  applySongMetaToSong(v, snap);
+  if (v.themeBg && v.themeFg) {
+    applyTheme(v.themeBg, v.themeFg);
+  } else {
+    applyTheme(DEFAULT_THEME.bgHex, DEFAULT_THEME.fgHex);
+  }
+}
+
+function clearInfoEditSession() {
+  infoUi.editSnapshot = null;
+  infoUi.editWork = null;
+}
+
+function syncInfoEditSessionToCurrentSong() {
+  if (!infoUi.editing) return;
+  const v = getCurrentSong();
+  if (!v) {
+    clearInfoEditSession();
+    return;
+  }
+  infoUi.editSnapshot = cloneSongMeta(v);
+  infoUi.editWork = cloneSongMeta(v);
+  infoUi.pickTarget = null;
+}
+
+function syncInfoEditingUi() {
+  dom.infoPanelRoot?.classList.toggle("is-editing", infoUi.editing);
+  document.documentElement.classList.toggle("is-info-editing", infoUi.editing);
+  dom.btnInfoEdit?.setAttribute("aria-pressed", infoUi.editing ? "true" : "false");
+  [dom.infoCategoryInput, dom.infoAuthorInput, dom.infoRoleInput].forEach((el) => {
+    if (!el) return;
+    el.hidden = !infoUi.editing;
+  });
+}
+
+function setInfoEditing(editing, options = {}) {
+  const wasEditing = infoUi.editing;
+  if (wasEditing && !editing && !options.commit) {
+    revertInfoEditDraft();
+    clearInfoEditSession();
+  }
+
+  infoUi.editing = !!editing;
+  setPickTarget(null);
+  syncInfoEditingUi();
+  renderInfoView();
+}
+
+function toggleInfoEditing() {
+  if (infoUi.editing) {
+    setInfoEditing(false);
+    showToast("已退出编辑模式");
+    return;
+  }
+  const v = getCurrentSong();
+  if (!v?.url) {
+    showToast(hasImportedSongs() ? "请先选择歌曲" : "请先导入歌曲");
+    return;
+  }
+  infoUi.editSnapshot = cloneSongMeta(v);
+  infoUi.editWork = cloneSongMeta(v);
+  setInfoEditing(true);
+  showToast("已进入编辑模式：点击封面或视频取色");
+}
+
+function commitInfoEditFromInputs() {
+  const v = getCurrentSong();
+  if (!v || !infoUi.editing) return false;
+  v.categories = splitByComma(dom.infoCategoryInput?.value);
+  v.authors = splitByComma(dom.infoAuthorInput?.value);
+  v.roles = splitByComma(dom.infoRoleInput?.value);
+  if (infoUi.editWork) {
+    v.level = normalizeLevel(infoUi.editWork.level);
+    v.themeBg =
+      normalizeHexColor(infoUi.editWork.themeBg) || v.themeBg;
+    v.themeFg =
+      normalizeHexColor(infoUi.editWork.themeFg) || v.themeFg;
+  }
+  if (v.themeBg && v.themeFg) {
+    applyTheme(v.themeBg, v.themeFg);
+  }
+  return true;
+}
+
+function saveInfoEdit(options = {}) {
+  const v = getCurrentSong();
+  if (!v) {
+    if (!options.silent) showToast("请先选择歌曲");
+    return false;
+  }
+  if (infoUi.editing) {
+    commitInfoEditFromInputs();
+  }
+  clearInfoEditSession();
+  setInfoEditing(false, { commit: true });
+  buildAllFilterPanels();
+  renderPlaylist();
+  if (!options.silent) showToast("保存成功");
+  return true;
+}
+
+async function exportInfoWithSave() {
+  if (infoUi.editing) {
+    saveInfoEdit({ silent: true });
+  }
+  await exportVideoJson();
+}
+
+function rgbToHex(r, g, b) {
+  return `#${[r, g, b]
+    .map((n) => Math.max(0, Math.min(255, n | 0)).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
+
+function applyPickedColor(hex) {
+  const color = normalizeHexColor(hex);
+  if (!color || !infoUi.editing || !infoUi.editWork || !infoUi.pickTarget) return;
+  if (infoUi.pickTarget === "component") {
+    infoUi.editWork.themeFg = color;
+    applyTheme(
+      normalizeHexColor(infoUi.editWork.themeBg) || state.themeColor,
+      color,
+    );
+  } else if (infoUi.pickTarget === "theme") {
+    infoUi.editWork.themeBg = color;
+    applyTheme(
+      color,
+      normalizeHexColor(infoUi.editWork.themeFg) || state.componentColor,
+    );
+  }
+}
+
+function pickColorFromCover(clientX, clientY) {
+  const v = getCurrentSong();
+  if (!v?.coverUrl || !dom.infoCoverPickCanvas || !dom.infoCoverBox) return;
+  const img = dom.infoCoverImg;
+  if (!img || img.hidden || !img.complete) return;
+  const size = 160;
+  dom.infoCoverPickCanvas.width = size;
+  dom.infoCoverPickCanvas.height = size;
+  const ctx = dom.infoCoverPickCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+  ctx.drawImage(img, 0, 0, size, size);
+  const coverRect = dom.infoCoverBox.getBoundingClientRect();
+  const px = Math.floor(((clientX - coverRect.left) / coverRect.width) * size);
+  const py = Math.floor(((clientY - coverRect.top) / coverRect.height) * size);
+  const d = ctx.getImageData(
+    Math.min(size - 1, Math.max(0, px)),
+    Math.min(size - 1, Math.max(0, py)),
+    1,
+    1,
+  ).data;
+  applyPickedColor(rgbToHex(d[0], d[1], d[2]));
+}
+
+/** object-fit:contain 下视频画面在元素内的实际区域 */
+function getVideoContentRect(video) {
+  if (!video) return null;
+  const rect = video.getBoundingClientRect();
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  if (!vw || !vh || rect.width <= 0 || rect.height <= 0) return null;
+  const videoRatio = vw / vh;
+  const elemRatio = rect.width / rect.height;
+  let contentW;
+  let contentH;
+  let offsetX;
+  let offsetY;
+  if (videoRatio > elemRatio) {
+    contentW = rect.width;
+    contentH = rect.width / videoRatio;
+    offsetX = 0;
+    offsetY = (rect.height - contentH) / 2;
+  } else {
+    contentH = rect.height;
+    contentW = rect.height * videoRatio;
+    offsetX = (rect.width - contentW) / 2;
+    offsetY = 0;
+  }
+  return {
+    left: rect.left + offsetX,
+    top: rect.top + offsetY,
+    width: contentW,
+    height: contentH,
+    videoWidth: vw,
+    videoHeight: vh,
+  };
+}
+
+function pickColorFromVideo(clientX, clientY) {
+  const video = dom.videoEl;
+  const canvas = dom.infoCoverPickCanvas;
+  if (!video || !canvas || !video.src) return;
+  if (!video.videoWidth || !video.videoHeight) {
+    showToast("视频尚未就绪");
+    return;
+  }
+  const content = getVideoContentRect(video);
+  if (!content) return;
+  if (
+    clientX < content.left ||
+    clientX > content.left + content.width ||
+    clientY < content.top ||
+    clientY > content.top + content.height
+  ) {
+    return;
+  }
+  const px = Math.floor(
+    ((clientX - content.left) / content.width) * content.videoWidth,
+  );
+  const py = Math.floor(
+    ((clientY - content.top) / content.height) * content.videoHeight,
+  );
+  canvas.width = content.videoWidth;
+  canvas.height = content.videoHeight;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+  try {
+    ctx.drawImage(video, 0, 0, content.videoWidth, content.videoHeight);
+    const d = ctx.getImageData(
+      Math.min(content.videoWidth - 1, Math.max(0, px)),
+      Math.min(content.videoHeight - 1, Math.max(0, py)),
+      1,
+      1,
+    ).data;
+    applyPickedColor(rgbToHex(d[0], d[1], d[2]));
+  } catch (err) {
+    console.error(err);
+    showToast("无法从视频取色");
+  }
+}
+
+function syncCoverDisplay() {
+  const v = getCurrentSong();
+  if (dom.infoCoverImg) {
+    dom.infoCoverImg.hidden = !v?.coverUrl;
+  }
+  if (dom.infoCoverPlaceholder) {
+    dom.infoCoverPlaceholder.hidden = !!v?.coverUrl;
+  }
+}
+
+function setPickTarget(target) {
+  infoUi.pickTarget =
+    target === "theme" || target === "component" ? target : null;
+  syncPickTargetUi();
+}
+
+function togglePickTarget(target) {
+  if (!infoUi.editing) return;
+  if (target !== "theme" && target !== "component") return;
+  setPickTarget(infoUi.pickTarget === target ? null : target);
+}
+
+function syncPickTargetUi() {
+  dom.infoThemePreview?.classList.toggle(
+    "is-active-target",
+    infoUi.editing && infoUi.pickTarget === "theme",
+  );
+  dom.infoComponentPreview?.classList.toggle(
+    "is-active-target",
+    infoUi.editing && infoUi.pickTarget === "component",
+  );
+  document.documentElement.classList.toggle(
+    "is-picking-color",
+    infoUi.editing && !!infoUi.pickTarget,
+  );
+}
+
+function setInfoCover(coverUrl) {
+  const img = dom.infoCoverImg;
+  if (!img) return;
+  if (coverUrl) {
+    img.src = coverUrl;
+  } else {
+    img.removeAttribute("src");
+  }
+  syncCoverDisplay();
+}
+
+function bindColorPickEvents() {
+  dom.infoThemePreview?.addEventListener("click", () => {
+    togglePickTarget("theme");
+  });
+
+  dom.infoComponentPreview?.addEventListener("click", () => {
+    togglePickTarget("component");
+  });
+
+  dom.infoCoverBox?.addEventListener("click", (e) => {
+    if (!infoUi.editing) return;
+    if (e.button != null && e.button !== 0) return;
+    if (!infoUi.pickTarget) {
+      showToast("请先选择背景或组件色");
+      return;
+    }
+    if (!getCurrentSong()?.coverUrl) {
+      showToast("当前无封面可取色");
+      return;
+    }
+    pickColorFromCover(e.clientX, e.clientY);
+  });
+
+  const onVideoPick = (e) => {
+    if (!infoUi.editing) return;
+    if (!infoUi.pickTarget) return;
+    if (e.button != null && e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pickColorFromVideo(e.clientX, e.clientY);
+  };
+
+  // 捕获阶段拦截，避免与播放区其它点击冲突
+  dom.playerZoneVideo?.addEventListener("click", onVideoPick, true);
+  dom.videoEl?.addEventListener("click", onVideoPick, true);
+}
+
+function renderInfoView() {
+  const song = getCurrentSong();
+  if (!song) {
+    if (dom.infoNameDisplay) dom.infoNameDisplay.textContent = INFO_DEFAULT_NAME;
+    renderChips(dom.infoCategoryChips, [], "category");
+    renderChips(dom.infoAuthorChips, [], "author");
+    renderChips(dom.infoRoleChips, [], "role");
+    if (dom.infoCategoryInput) dom.infoCategoryInput.value = "";
+    if (dom.infoAuthorInput) dom.infoAuthorInput.value = "";
+    if (dom.infoRoleInput) dom.infoRoleInput.value = "";
+    renderLevelHearts(1);
+    setInfoCover(null);
+    applyTheme(DEFAULT_THEME.bgHex, DEFAULT_THEME.fgHex);
+    setPickTarget(infoUi.pickTarget);
+    syncCoverDisplay();
+    return;
+  }
+
+  if (dom.infoNameDisplay) {
+    const raw = song.titleDisplay || song.title || "";
+    dom.infoNameDisplay.textContent = infoUi.editing
+      ? String(raw)
+      : formatUserFacingText(raw);
+  }
+
+  const meta = getInfoEditMeta() || song;
+  renderChips(dom.infoCategoryChips, meta.categories || song.categories || [], "category");
+  renderChips(dom.infoAuthorChips, meta.authors || song.authors || [], "author");
+  renderChips(dom.infoRoleChips, meta.roles || song.roles || [], "role");
+
+  if (infoUi.editing && infoUi.editWork) {
+    if (dom.infoCategoryInput) {
+      dom.infoCategoryInput.value = joinByComma(infoUi.editWork.categories);
+    }
+    if (dom.infoAuthorInput) {
+      dom.infoAuthorInput.value = joinByComma(infoUi.editWork.authors);
+    }
+    if (dom.infoRoleInput) {
+      dom.infoRoleInput.value = joinByComma(infoUi.editWork.roles);
+    }
+  }
+
+  renderLevelHearts(meta.level ?? song.level);
+  setInfoCover(song.coverUrl || null);
+
+  const bg =
+    normalizeHexColor(meta.themeBg) ||
+    normalizeHexColor(song.themeBg) ||
+    DEFAULT_THEME.bgHex;
+  const fg =
+    normalizeHexColor(meta.themeFg) ||
+    normalizeHexColor(song.themeFg) ||
+    DEFAULT_THEME.fgHex;
+  applyTheme(bg, fg);
+  setPickTarget(infoUi.pickTarget);
+  syncCoverDisplay();
+}
+
+function syncPlayPauseButton() {
+  if (!dom.btnPlayPause || !dom.videoEl) return;
+  const playing = !dom.videoEl.paused && !dom.videoEl.ended && !!dom.videoEl.src;
+  dom.btnPlayPause.innerHTML = playing ? PAUSE_ICON_SVG : PLAY_ICON_SVG;
+  dom.btnPlayPause.title = playing ? "暂停" : "播放";
+  dom.btnPlayPause.setAttribute("aria-label", playing ? "暂停" : "播放");
+  const current = dom.playlistGrid?.querySelector(
+    ".song-card.is-current .song-card-play-icon",
+  );
+  if (current) current.innerHTML = getPlayIconSvg(state.currentIndex);
+}
+
+function togglePlayPause() {
+  const list = getPlayableIndices();
+  if (!list.length) {
+    showToast(
+      hasImportedSongs()
+        ? "当前筛选结果为空"
+        : "请先导入歌曲",
+    );
+    return;
+  }
+  if (state.currentIndex < 0 || !list.includes(state.currentIndex)) {
+    playSongAt(list[0]);
+    return;
+  }
+  const v = dom.videoEl;
+  if (!v?.src) {
+    playSongAt(state.currentIndex);
+    return;
+  }
+  if (v.paused || v.ended) {
+    resumeAudioContext();
+    v.play().catch(() => {});
+  } else {
+    v.pause();
+  }
+}
+
+/* ---------- 导入 ---------- */
+
+function baseNameOf(name) {
+  return String(name).replace(/\.[^.]+$/, "");
+}
+
+/** 歌词匹配键：去扩展名、去前导 @ */
+function lrcBaseKey(name) {
+  return baseNameOf(name).replace(/^@+/, "").trim().toLowerCase();
+}
+
+function extOf(name) {
+  const m = String(name).toLowerCase().match(/(\.[^./\\]+)$/);
+  return m ? m[1] : "";
+}
 
 function splitMetaTokens(val) {
   const s = String(val ?? "");
@@ -751,20 +1290,97 @@ function normAndSort(arr) {
     );
 }
 
-function baseNameOf(name) {
-  return String(name).replace(/\.[^.]+$/, "");
+function normalizeLevel(n) {
+  const x = Math.round(Number(n));
+  if (!Number.isFinite(x)) return 1;
+  return Math.min(LEVEL_MAX, Math.max(1, x));
 }
 
-function extOf(name) {
-  const m = String(name).toLowerCase().match(/(\.[^./\\]+)$/);
-  return m ? m[1] : "";
+function readCategoriesFromMeta(saved) {
+  if (Array.isArray(saved.categories)) return normAndSort(saved.categories);
+  if (typeof saved.categories === "string") return normAndSort(splitMetaTokens(saved.categories));
+  if (saved.category) return normAndSort(splitMetaTokens(saved.category));
+  return [];
 }
 
-function revokeVideoObjectUrls(videos) {
-  (videos || []).forEach((v) => {
-    if (v.url?.startsWith("blob:")) URL.revokeObjectURL(v.url);
-    if (v.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(v.coverUrl);
-    if (v.lrcUrl?.startsWith("blob:")) URL.revokeObjectURL(v.lrcUrl);
+function readStringListFromMeta(saved, ...keys) {
+  for (const key of keys) {
+    const val = saved[key];
+    if (Array.isArray(val)) return normAndSort(val);
+    if (typeof val === "string") return normAndSort(splitMetaTokens(val));
+  }
+  return [];
+}
+
+function revokeSongObjectUrls(songs) {
+  (songs || []).forEach((v) => revokeOneSongObjectUrls(v));
+}
+
+function revokeOneSongObjectUrls(v) {
+  if (!v) return;
+  if (v.url?.startsWith("blob:")) URL.revokeObjectURL(v.url);
+  if (v.coverUrl?.startsWith("blob:")) URL.revokeObjectURL(v.coverUrl);
+  if (v.lrcUrl?.startsWith("blob:")) URL.revokeObjectURL(v.lrcUrl);
+}
+
+function songDedupeKey(song) {
+  const rel = String(song.relPath || "").trim().toLowerCase();
+  if (rel) return `path:${rel}`;
+  const file = String(song.fileName || "").trim().toLowerCase();
+  if (file) return `file:${file}`;
+  const title = String(song.title || "").trim().toLowerCase();
+  return title ? `title:${title}` : "";
+}
+
+function hasImportedSongs() {
+  return state.songs.some((s) => !!s.url);
+}
+
+function pickBestCover(list) {
+  if (!list?.length) return null;
+  const order = { ".png": 0, ".jpg": 1, ".jpeg": 2, ".gif": 3 };
+  return [...list].sort((a, b) => {
+    const oa = order[extOf(a.name)] ?? 99;
+    const ob = order[extOf(b.name)] ?? 99;
+    if (oa !== ob) return oa - ob;
+    return a.name.localeCompare(b.name, "zh-CN", { numeric: true, sensitivity: "base" });
+  })[0];
+}
+
+function pickBestMedia(list) {
+  if (!list?.length) return null;
+  const order = { ".mp4": 0, ".flac": 1, ".mp3": 2 };
+  return [...list].sort((a, b) => {
+    const oa = order[extOf(a.name)] ?? 99;
+    const ob = order[extOf(b.name)] ?? 99;
+    if (oa !== ob) return oa - ob;
+    return a.relPath.localeCompare(b.relPath, "zh-CN", { numeric: true, sensitivity: "base" });
+  })[0];
+}
+
+function applyDuplicateTitleLabels(songs) {
+  const groups = new Map();
+  songs.forEach((v) => {
+    const label = String(v.title || "").trim();
+    const key = label.toLowerCase();
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(v);
+  });
+
+  groups.forEach((list) => {
+    if (list.length <= 1) return;
+    list.forEach((v) => {
+      const label = String(v.title || "").trim();
+      const dir =
+        v.relPath && v.relPath.includes("/")
+          ? v.relPath.replace(/\/[^/]+$/, "")
+          : v.relDir || v.relPath || v.fileName || "";
+      v.titleDisplay = dir ? `${label}（${dir}）` : label;
+    });
+  });
+
+  songs.forEach((v) => {
+    if (!v.titleDisplay) v.titleDisplay = v.title;
   });
 }
 
@@ -804,70 +1420,6 @@ async function walkDir(dirHandle, prefix = "") {
   return results;
 }
 
-function pickBestCover(list) {
-  if (!list?.length) return null;
-  const order = { ".png": 0, ".jpg": 1, ".jpeg": 2, ".gif": 3 };
-  return [...list].sort((a, b) => {
-    const oa = order[extOf(a.name)] ?? 99;
-    const ob = order[extOf(b.name)] ?? 99;
-    if (oa !== ob) return oa - ob;
-    return a.name.localeCompare(b.name, "zh-CN", { numeric: true, sensitivity: "base" });
-  })[0];
-}
-
-function pickBestMedia(list) {
-  if (!list?.length) return null;
-  const order = { ".mp4": 0, ".flac": 1, ".mp3": 2 };
-  return [...list].sort((a, b) => {
-    const oa = order[extOf(a.name)] ?? 99;
-    const ob = order[extOf(b.name)] ?? 99;
-    if (oa !== ob) return oa - ob;
-    return a.relPath.localeCompare(b.relPath, "zh-CN", { numeric: true, sensitivity: "base" });
-  })[0];
-}
-
-function applyDuplicateTitleLabels(videos) {
-  const groups = new Map();
-  videos.forEach((v) => {
-    const label = String(v.title || "").trim();
-    const key = label.toLowerCase();
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(v);
-  });
-
-  groups.forEach((list) => {
-    if (list.length <= 1) return;
-    list.forEach((v) => {
-      const label = String(v.title || "").trim();
-      const dir =
-        v.relPath && v.relPath.includes("/")
-          ? v.relPath.replace(/\/[^/]+$/, "")
-          : v.relDir || v.relPath || v.fileName || "";
-      v.titleDisplay = dir ? `${label}（${dir}）` : label;
-    });
-  });
-
-  videos.forEach((v) => {
-    if (!v.titleDisplay) v.titleDisplay = v.title;
-  });
-}
-
-function readCategoriesFromMeta(saved) {
-  if (Array.isArray(saved.categories)) return normAndSort(saved.categories);
-  if (typeof saved.categories === "string") return normAndSort(splitMetaTokens(saved.categories));
-  if (saved.category) return normAndSort(splitMetaTokens(saved.category));
-  return [];
-}
-
-function readStringListFromMeta(saved, ...keys) {
-  for (const key of keys) {
-    const val = saved[key];
-    if (Array.isArray(val)) return normAndSort(val);
-    if (typeof val === "string") return normAndSort(splitMetaTokens(val));
-  }
-  return [];
-}
-
 async function scanAllFromRoot() {
   if (!state.root) {
     showToast("请先选择文件夹。");
@@ -882,15 +1434,10 @@ async function scanAllFromRoot() {
 
   allFiles.forEach((f) => {
     const lower = f.name.toLowerCase();
-    if (MEDIA_EXTS.some((ext) => lower.endsWith(ext))) {
-      mediaFiles.push(f);
-    } else if (COVER_EXTS.some((ext) => lower.endsWith(ext))) {
-      coverFiles.push(f);
-    } else if (lower.endsWith(LRC_EXT)) {
-      lrcFiles.push(f);
-    } else if (lower === "video.json") {
-      videoJsonFiles.push(f);
-    }
+    if (MEDIA_EXTS.some((ext) => lower.endsWith(ext))) mediaFiles.push(f);
+    else if (COVER_EXTS.some((ext) => lower.endsWith(ext))) coverFiles.push(f);
+    else if (lower.endsWith(LRC_EXT)) lrcFiles.push(f);
+    else if (lower === "video.json") videoJsonFiles.push(f);
   });
 
   const savedMetaGlobal = new Map();
@@ -934,7 +1481,8 @@ async function scanAllFromRoot() {
   const lrcMapScoped = new Map();
   const lrcMapGlobal = new Map();
   lrcFiles.forEach((f) => {
-    const baseLower = baseNameOf(f.name).toLowerCase();
+    const baseLower = lrcBaseKey(f.name);
+    if (!baseLower) return;
     const scopedKey = `${f.relDir || ""}::${baseLower}`;
     if (!lrcMapScoped.has(scopedKey)) lrcMapScoped.set(scopedKey, f);
     if (!lrcMapGlobal.has(baseLower)) lrcMapGlobal.set(baseLower, f);
@@ -948,7 +1496,7 @@ async function scanAllFromRoot() {
     mediaByScope.get(key).push(f);
   });
 
-  const videos = [];
+  const songs = [];
 
   for (const [, group] of [...mediaByScope.entries()].sort((a, b) =>
     a[0].localeCompare(b[0], "zh-CN", { numeric: true, sensitivity: "base" }),
@@ -964,7 +1512,7 @@ async function scanAllFromRoot() {
     const file = await fileItem.handle.getFile();
     const url = URL.createObjectURL(file);
 
-    let coverUrl = null;
+    let coverUrl = "";
     let coverFileName = null;
     const scopedCovers =
       coverMapScoped.get(`${relDir}::${baseLower}`) || coverMapGlobal.get(baseLower) || [];
@@ -973,16 +1521,6 @@ async function scanAllFromRoot() {
       const coverFile = await bestCover.handle.getFile();
       coverUrl = URL.createObjectURL(coverFile);
       coverFileName = bestCover.name;
-    }
-
-    let lrcUrl = null;
-    let lrcFileName = null;
-    const lrcItem =
-      lrcMapScoped.get(`${relDir}::${baseLower}`) || lrcMapGlobal.get(baseLower) || null;
-    if (lrcItem) {
-      const lrcFile = await lrcItem.handle.getFile();
-      lrcUrl = URL.createObjectURL(lrcFile);
-      lrcFileName = lrcItem.name;
     }
 
     const scopedGet = (k) => savedMetaScoped.get(`${relDir}::${String(k)}`);
@@ -995,57 +1533,149 @@ async function scanAllFromRoot() {
       savedMetaGlobal.get(relPath) ||
       {};
 
-    const themeBg = U.normalizeHexColor(saved.themeBg) || theme.themeColor;
-    const themeFg = U.normalizeHexColor(saved.themeFg) || theme.componentColor;
+    let lrcUrl = "";
+    let lrcFileName = null;
+    let lrcText = "";
+    const mediaKey = lrcBaseKey(base);
+    const titleKey = lrcBaseKey(saved.title || base);
+    const lrcItem =
+      lrcMapScoped.get(`${relDir}::${mediaKey}`) ||
+      lrcMapScoped.get(`${relDir}::${titleKey}`) ||
+      lrcMapGlobal.get(mediaKey) ||
+      lrcMapGlobal.get(titleKey) ||
+      null;
+    if (lrcItem) {
+      const lrcFile = await lrcItem.handle.getFile();
+      lrcText = await readLrcTextFromFile(lrcFile);
+      lrcUrl = URL.createObjectURL(lrcFile);
+      lrcFileName = lrcItem.name;
+    }
 
-    videos.push({
-      id: videos.length,
+    songs.push({
+      id: songs.length,
       title: saved.title || base,
       titleDisplay: saved.title || base,
       fileName: fileItem.name,
       relPath,
+      relDir,
       url,
       categories: readCategoriesFromMeta(saved),
       authors: readStringListFromMeta(saved, "authors", "author"),
       roles: readStringListFromMeta(saved, "roles", "role"),
       tags: readStringListFromMeta(saved, "tags", "labels"),
       level: normalizeLevel(saved.level),
-      themeBg,
-      themeFg,
+      themeBg: saved.themeBg || "",
+      themeFg: saved.themeFg || "",
       coverUrl,
       coverFileName,
       lrcUrl,
       lrcFileName,
+      lrcText,
     });
   }
 
-  videos.sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-CN", { numeric: true, sensitivity: "base" }) ||
-    a.relPath.localeCompare(b.relPath, "zh-CN", { numeric: true, sensitivity: "base" }),
+  songs.sort(
+    (a, b) =>
+      a.title.localeCompare(b.title, "zh-CN", { numeric: true, sensitivity: "base" }) ||
+      a.relPath.localeCompare(b.relPath, "zh-CN", { numeric: true, sensitivity: "base" }),
   );
-  applyDuplicateTitleLabels(videos);
-  videos.forEach((v, index) => {
-    v.id = index;
-  });
 
-  revokeVideoObjectUrls(state.videos);
-  state.videos = videos;
-  state.currentIndex = videos.length ? 0 : -1;
-  if (state.playMode === "shuffle") regenerateShuffleOrder();
+  const keepPlaying =
+    state.currentIndex >= 0 ? state.songs[state.currentIndex] : null;
+  const existing = hasImportedSongs()
+    ? state.songs.filter((s) => !!s.url)
+    : [];
+  const existingKeys = new Set(
+    existing.map(songDedupeKey).filter(Boolean),
+  );
 
-  if (state.currentIndex >= 0) {
-    const v = state.videos[state.currentIndex];
-    if (v?.url) setVideoSource(v.url);
-  } else {
-    setVideoSource("");
+  const added = [];
+  let skipped = 0;
+  for (const s of songs) {
+    const key = songDedupeKey(s);
+    if (key && existingKeys.has(key)) {
+      revokeOneSongObjectUrls(s);
+      skipped += 1;
+      continue;
+    }
+    if (key) existingKeys.add(key);
+    added.push(s);
   }
 
-  renderInfoView({ bumpTheme: false, refreshCover: true });
-  renderPlaylist();
-  buildAllFilterPanels();
+  // 首次导入时清掉占位曲目；再次导入则叠加
+  if (!existing.length) {
+    revokeSongObjectUrls(state.songs.filter((s) => !s.url));
+  }
 
-  let msg = `已导入 ${videos.length} 首歌曲`;
-  showToast(msg);
+  const merged = [...existing, ...added];
+  merged.sort(
+    (a, b) =>
+      a.title.localeCompare(b.title, "zh-CN", { numeric: true, sensitivity: "base" }) ||
+      String(a.relPath || "").localeCompare(String(b.relPath || ""), "zh-CN", {
+        numeric: true,
+        sensitivity: "base",
+      }),
+  );
+  applyDuplicateTitleLabels(merged);
+  merged.forEach((v, index) => {
+    v.id = index;
+  });
+  state.songs = merged;
+  if (state.playMode === "shuffle") regenerateShuffleOrder();
+  buildAllFilterPanels();
+  clearLyricsState();
+
+  if (keepPlaying?.url) {
+    const idx = merged.findIndex(
+      (s) =>
+        s.url === keepPlaying.url ||
+        (songDedupeKey(s) && songDedupeKey(s) === songDedupeKey(keepPlaying)),
+    );
+    state.currentIndex = idx >= 0 ? idx : merged.length ? 0 : -1;
+    renderPlaylist();
+    syncPlayPauseButton();
+    syncProgressFromVideo();
+    syncInfoEditSessionToCurrentSong();
+    renderInfoView();
+    ensureLyricsLoaded();
+  } else if (merged.length) {
+    state.currentIndex = 0;
+    const v = merged[0];
+    if (v?.url) {
+      setVideoSource(v.url);
+      applyPlaybackRate();
+      applyVolume();
+    }
+    renderPlaylist();
+    syncPlayPauseButton();
+    syncProgressFromVideo();
+    syncInfoEditSessionToCurrentSong();
+    renderInfoView();
+    ensureLyricsLoaded();
+  } else {
+    state.currentIndex = -1;
+    setVideoSource("");
+    renderPlaylist();
+    syncPlayPauseButton();
+    syncProgressFromVideo();
+    if (infoUi.editing) {
+      clearInfoEditSession();
+      infoUi.editing = false;
+      syncInfoEditingUi();
+    }
+    renderInfoView();
+    ensureLyricsLoaded();
+  }
+
+  if (existing.length) {
+    showToast(
+      skipped
+        ? `新增 ${added.length} 首，跳过 ${skipped} 首重复，共 ${merged.length} 首`
+        : `新增 ${added.length} 首，共 ${merged.length} 首`,
+    );
+  } else {
+    showToast(`已导入 ${merged.length} 首歌曲`);
+  }
 }
 
 async function openImportFolderPicker() {
@@ -1055,33 +1685,270 @@ async function openImportFolderPicker() {
   await scanAllFromRoot();
 }
 
-function buildVideoJsonPayload() {
-  return state.videos.map((v) => {
-    const item = {
-      title: v.title,
-      fileName: v.fileName,
-      relPath: v.relPath,
-      categories: v.categories || [],
-      authors: v.authors || [],
-      roles: v.roles || [],
-      tags: v.tags || [],
-      level: normalizeLevel(v.level),
-      themeBg: v.themeBg,
-      themeFg: v.themeFg,
+/* ---------- 可视化 ---------- */
+
+let audioContext = null;
+let analyser = null;
+let analyserDataArray = null;
+let visualizerRaf = 0;
+
+function parseComponentRgb() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--component-color")
+    .trim();
+  if (raw.startsWith("#") && (raw.length === 7 || raw.length === 4)) {
+    const hex =
+      raw.length === 4
+        ? `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`
+        : raw;
+    return {
+      r: parseInt(hex.slice(1, 3), 16),
+      g: parseInt(hex.slice(3, 5), 16),
+      b: parseInt(hex.slice(5, 7), 16),
     };
-    if (v.coverFileName) item.coverFileName = v.coverFileName;
-    if (v.lrcFileName) item.lrcFileName = v.lrcFileName;
-    return item;
-  });
+  }
+  const m = raw.match(/(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (m) return { r: +m[1], g: +m[2], b: +m[3] };
+  return { r: 0, g: 0, b: 0 };
+}
+
+function readVisualizerShadowMetrics() {
+  const cs = getComputedStyle(document.documentElement);
+  return {
+    offsetX: parseFloat(cs.getPropertyValue("--ui-shadow-x")) || 6,
+    offsetY: parseFloat(cs.getPropertyValue("--ui-shadow-y")) || 6,
+    blurSoft: 18,
+    alphaHard: 0.4,
+    alphaSoft: 0.26,
+  };
+}
+
+/** 与原设计一致：居中镜像柱状频谱 + 右下淡化阴影 */
+function drawBarsVisualizer(ctx, canvas, rgb, freqData) {
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const shadow = readVisualizerShadowMetrics();
+  const barCount = 36;
+  const barMaxHeight = h * 0.85;
+  const midX = w / 2;
+  const barWidth = w / 2 / barCount;
+  const hasData = freqData && freqData.length > 0;
+
+  const drawBar = (x, barHeight) => {
+    const bx = x + 2;
+    const barW = Math.max(1, barWidth - 4);
+    const { r, g, b } = rgb;
+    const y = h - barHeight;
+    const gradient = ctx.createLinearGradient(0, y, 0, h);
+    gradient.addColorStop(0, `rgb(${r}, ${g}, ${b})`);
+    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.35)`);
+
+    const paintFill = () => {
+      ctx.fillStyle = gradient;
+      ctx.fillRect(bx, y, barW, barHeight);
+    };
+
+    const paintShadow = (blur, alpha) => {
+      ctx.save();
+      ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      ctx.shadowBlur = blur;
+      ctx.shadowOffsetX = shadow.offsetX;
+      ctx.shadowOffsetY = shadow.offsetY;
+      paintFill();
+      ctx.restore();
+    };
+
+    paintShadow(0, shadow.alphaHard);
+    paintShadow(shadow.blurSoft, shadow.alphaSoft);
+    paintFill();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(bx, y, barW, barHeight);
+  };
+
+  for (let i = 0; i < barCount; i++) {
+    const magnitude = hasData
+      ? (freqData[Math.floor((i / barCount) * freqData.length)] || 0) / 255
+      : 0;
+    const barHeight = Math.max(2, magnitude * barMaxHeight);
+    drawBar(midX - (i + 1) * barWidth, barHeight);
+    drawBar(midX + i * barWidth, barHeight);
+  }
+
+  const { r, g, b } = rgb;
+  ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`;
+  ctx.fillRect(0, h - 6, w, 2);
+}
+
+function resizeVizCanvas() {
+  const canvas = dom.vizCanvas;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.floor(rect.width));
+  const h = Math.max(1, Math.floor(rect.height));
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+}
+
+function resumeAudioContext() {
+  if (audioContext?.state === "suspended") {
+    audioContext.resume().catch(() => {});
+  }
+}
+
+function setupAudioVisualization() {
+  const canvas = dom.vizCanvas;
+  if (!canvas || !dom.videoEl) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  resizeVizCanvas();
+  window.addEventListener("resize", resizeVizCanvas);
+
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.7;
+    analyserDataArray = new Uint8Array(analyser.frequencyBinCount);
+    try {
+      const src = audioContext.createMediaElementSource(dom.videoEl);
+      src.connect(analyser);
+      analyser.connect(audioContext.destination);
+    } catch (e) {
+      if (e.name !== "InvalidStateError") {
+        console.error("创建可视化音频源失败:", e);
+      }
+    }
+  }
+
+  const draw = () => {
+    visualizerRaf = requestAnimationFrame(draw);
+    if (!analyser || !analyserDataArray) {
+      drawBarsVisualizer(ctx, canvas, parseComponentRgb(), null);
+      return;
+    }
+    analyser.getByteFrequencyData(analyserDataArray);
+    drawBarsVisualizer(ctx, canvas, parseComponentRgb(), analyserDataArray);
+  };
+
+  if (!visualizerRaf) {
+    visualizerRaf = requestAnimationFrame(draw);
+  }
+}
+
+/* ---------- 文案 / 翻译 ---------- */
+
+function parseBilingual(text) {
+  const s = String(text ?? "").trim();
+  const fw = s.match(/^(.+?)（([^）]+)）$/);
+  if (fw) {
+    return { foreign: fw[1].trim(), chinese: fw[2].trim(), hasPair: true };
+  }
+  const aw = s.match(/^(.+?)\(([^)]+)\)$/);
+  if (aw) {
+    return { foreign: aw[1].trim(), chinese: aw[2].trim(), hasPair: true };
+  }
+  return { foreign: s, chinese: s, hasPair: false };
+}
+
+function displayLabel(text, preferChinese) {
+  const p = parseBilingual(text);
+  if (!p.hasPair) return p.foreign;
+  const useChinese =
+    preferChinese !== undefined ? preferChinese : state.translateMode;
+  return useChinese ? p.chinese : p.foreign;
+}
+
+function formatUserFacingText(text) {
+  return displayLabel(text);
+}
+
+function getInfoNameCopyText(song = getCurrentSong()) {
+  if (!song) return "";
+  const raw = String(song.titleDisplay || song.title || "").trim();
+  if (!raw) return "";
+  if (infoUi.editing) return raw;
+  return formatUserFacingText(raw);
+}
+
+async function copyInfoNameToClipboard() {
+  const text = getInfoNameCopyText();
+  if (!text || text === INFO_DEFAULT_NAME) {
+    showToast("无可复制内容");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+    } finally {
+      ta.remove();
+    }
+  }
+  showToast("已复制");
+}
+
+function applyTranslateModeUi() {
+  dom.btnTranslate?.setAttribute(
+    "aria-pressed",
+    state.translateMode ? "true" : "false",
+  );
+}
+
+function toggleTranslateMode() {
+  state.translateMode = !state.translateMode;
+  applyTranslateModeUi();
+  buildAllFilterPanels();
+  renderPlaylist();
+  renderInfoView();
+  showToast(state.translateMode ? "已进入翻译模式" : "已退出翻译模式");
+}
+
+/* ---------- 导出 ---------- */
+
+function buildVideoJsonPayload() {
+  return state.songs
+    .filter((v) => !!v.fileName || !!v.relPath)
+    .map((v) => {
+      const item = {
+        title: v.title,
+        fileName: v.fileName,
+        relPath: v.relPath,
+        categories: v.categories || [],
+        authors: v.authors || [],
+        roles: v.roles || [],
+        tags: v.tags || [],
+        level: normalizeLevel(v.level),
+        themeBg: v.themeBg || "",
+        themeFg: v.themeFg || "",
+      };
+      if (v.coverFileName) item.coverFileName = v.coverFileName;
+      if (v.lrcFileName) item.lrcFileName = v.lrcFileName;
+      return item;
+    });
 }
 
 async function exportVideoJson() {
-  if (!state.videos.length) {
-    showToast("当前没有可导出的数据。");
+  const payload = buildVideoJsonPayload();
+  if (!payload.length) {
+    showToast(hasImportedSongs() ? "无可导出数据" : "请先导入歌曲");
     return;
   }
 
-  const dataStr = JSON.stringify(buildVideoJsonPayload(), null, 2);
+  const dataStr = JSON.stringify(payload, null, 2);
 
   if (window.showSaveFilePicker) {
     try {
@@ -1121,482 +1988,76 @@ async function exportVideoJson() {
   showToast("已下载 video.json 文件。");
 }
 
-function normalizeLevel(n) {
-  const x = Math.round(Number(n));
-  if (!Number.isFinite(x)) return 1;
-  return Math.min(LEVEL_MAX, Math.max(1, x));
+/* ---------- 音量 ---------- */
+
+function applyVolume() {
+  const v = dom.videoEl;
+  if (!v) return;
+  const vol = Math.min(1, Math.max(0, state.volume));
+  v.volume = vol;
+  v.muted = vol <= 0;
+  syncVolumeSlider();
 }
 
-function getCurrentVideo() {
-  const i = state.currentIndex;
-  if (i < 0 || i >= state.videos.length) return null;
-  return state.videos[i];
+function syncVolumeSlider() {
+  if (!dom.volumeSlider || !dom.videoEl) return;
+  const vol = dom.videoEl.muted ? 0 : dom.videoEl.volume;
+  const pct = Math.round(Math.min(1, Math.max(0, vol)) * 100);
+  state.volume = pct / 100;
+  dom.volumeSlider.value = String(pct);
 }
 
-function isVideoPlaying(index) {
-  return (
-    state.currentIndex === index &&
-    dom.videoEl &&
-    !dom.videoEl.paused &&
-    !dom.videoEl.ended
+function setVideoVolume(normalized) {
+  state.volume = Math.min(1, Math.max(0, normalized));
+  applyVolume();
+}
+
+function setVolumePopoverOpen(open) {
+  state.volumeOpen = !!open;
+  if (dom.volumePopover) dom.volumePopover.hidden = !state.volumeOpen;
+  dom.btnVolume?.setAttribute(
+    "aria-expanded",
+    state.volumeOpen ? "true" : "false",
   );
+  if (state.volumeOpen) syncVolumeSlider();
 }
 
-function getPlayIconSvg(index) {
-  return isVideoPlaying(index) ? PAUSE_ICON_SVG : PLAY_ICON_SVG;
+function toggleVolumePopover() {
+  setVolumePopoverOpen(!state.volumeOpen);
 }
 
-function isMainVideoPlaying() {
-  return (
-    !!dom.videoEl &&
-    !!dom.videoEl.src &&
-    !dom.videoEl.paused &&
-    !dom.videoEl.ended
-  );
-}
+function bindVolumeEvents() {
+  dom.btnVolume?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleVolumePopover();
+  });
 
-function wrapPlayPauseIconForSplit(svgMarkup) {
-  const m = svgMarkup.match(/<svg([^>]*)>([\s\S]*)<\/svg>/i);
-  if (!m) return svgMarkup;
-  const attrs = m[1];
-  const inner = m[2];
-  return `<span class="player-ctrl-split-icon" aria-hidden="true"><svg class="player-ctrl-split-icon__layer player-ctrl-split-icon__layer--left"${attrs}>${inner}</svg><svg class="player-ctrl-split-icon__layer player-ctrl-split-icon__layer--right"${attrs}>${inner}</svg></span>`;
-}
+  dom.volumeSlider?.addEventListener("input", () => {
+    const pct = Number(dom.volumeSlider.value);
+    if (!Number.isFinite(pct)) return;
+    setVideoVolume(pct / 100);
+  });
 
-function syncPlayPauseButton() {
-  if (!dom.btnPlayPause) return;
-  const playing = isMainVideoPlaying();
-  const iconSvg = playing ? PAUSE_ICON_SVG : PLAY_ICON_SVG;
-  dom.btnPlayPause.innerHTML = window.SplitColor?.isActive?.()
-    ? wrapPlayPauseIconForSplit(iconSvg)
-    : iconSvg;
-  const label = playing ? "暂停" : "播放";
-  dom.btnPlayPause.title = label;
-  dom.btnPlayPause.setAttribute("aria-label", label);
-  if (window.SplitColor?.isActive?.()) window.SplitColor.refresh();
-}
+  dom.volumePopover?.addEventListener("click", (e) => e.stopPropagation());
 
-function playPreviousTrack() {
-  playAdjacentTrack(-1);
-}
-
-function playNextTrack() {
-  playAdjacentTrack(1);
-}
-
-function getShuffleFingerprint() {
-  return getFilteredIndices().join(",");
-}
-
-function shuffleIndices(indices) {
-  const list = indices.slice();
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  return list;
-}
-
-function regenerateShuffleOrder() {
-  state.shuffleFingerprint = getShuffleFingerprint();
-  const indices = getFilteredIndices();
-  state.shuffleOrder = indices.length ? shuffleIndices(indices) : [];
-}
-
-function syncShuffleOrder() {
-  if (state.playMode !== "shuffle") return;
-  if (state.shuffleFingerprint !== getShuffleFingerprint()) {
-    regenerateShuffleOrder();
-  }
-}
-
-function resolveManualTrackIndex(direction) {
-  const list = getFilteredIndices();
-  if (!list.length) return null;
-  const cur = state.currentIndex;
-
-  if (state.playMode === "list") {
-    if (cur < 0) return list[0];
-    const pos = list.indexOf(cur);
-    if (pos === -1) return list[0];
-    if (direction < 0) return list[pos <= 0 ? list.length - 1 : pos - 1];
-    return list[pos >= list.length - 1 ? 0 : pos + 1];
-  }
-
-  syncShuffleOrder();
-  const order = state.shuffleOrder;
-  if (!order.length) return list[0];
-  const pos = order.indexOf(cur);
-  if (pos === -1) return order[0];
-  if (direction < 0) {
-    return pos <= 0 ? order[order.length - 1] : order[pos - 1];
-  }
-  if (pos >= order.length - 1) {
-    regenerateShuffleOrder();
-    return state.shuffleOrder[0] ?? list[0];
-  }
-  return order[pos + 1];
-}
-
-function resolveAutoNextIndex() {
-  const list = getFilteredIndices();
-  if (!list.length) return null;
-  const cur = state.currentIndex;
-
-  if (state.playMode === "list") {
-    if (cur < 0) return list[0];
-    const pos = list.indexOf(cur);
-    if (pos === -1) return list[0];
-    return list[pos >= list.length - 1 ? 0 : pos + 1];
-  }
-
-  syncShuffleOrder();
-  const order = state.shuffleOrder;
-  if (!order.length) return list[0];
-  const pos = order.indexOf(cur);
-  if (pos === -1) return order[0];
-  if (pos >= order.length - 1) {
-    regenerateShuffleOrder();
-    return state.shuffleOrder[0] ?? list[0];
-  }
-  return order[pos + 1];
-}
-
-function replayCurrentInSingleMode() {
-  if (!state.videos.length) {
-    showToast("列表为空");
-    return;
-  }
-  if (state.currentIndex < 0) {
-    setCurrentIndex(0);
-    return;
-  }
-  if (!dom.videoEl) return;
-  resumeAudioContext();
-  try {
-    dom.videoEl.currentTime = 0;
-  } catch {
-    /* ignore */
-  }
-  dom.videoEl.play().catch(() => {});
-  syncPlayPauseButton();
-  renderPlaylist();
-}
-
-function playAdjacentTrack(direction) {
-  const filtered = getFilteredIndices();
-  if (!filtered.length) {
-    showToast(state.videos.length ? "当前筛选结果为空" : "列表为空");
-    return;
-  }
-  if (state.playMode === "single") {
-    replayCurrentInSingleMode();
-    return;
-  }
-  const idx = resolveManualTrackIndex(direction);
-  if (idx === null) return;
-  setCurrentIndex(idx);
-}
-
-function applyPlaybackRate() {
-  if (!dom.videoEl) return;
-  dom.videoEl.playbackRate = state.playbackRate;
-  if (dom.videoBackdrop) dom.videoBackdrop.playbackRate = state.playbackRate;
-}
-
-function cyclePlaybackSpeed() {
-  let rate = state.playbackRate;
-  if (rate < 2) {
-    rate = Math.min(2, Math.round((rate + 0.25) * 100) / 100);
-  } else {
-    rate = 1;
-  }
-  state.playbackRate = rate;
-  applyPlaybackRate();
-  showToast(`播放速度：${rate.toFixed(2)}x`);
-}
-
-function applyPlayModeUi() {
-  if (!dom.btnPlayMode) return;
-  const iconByMode = {
-    shuffle: PLAY_MODE_SHUFFLE_SVG,
-    list: PLAY_MODE_LIST_SVG,
-    single: PLAY_MODE_SINGLE_SVG,
-  };
-  const label = PLAY_MODE_LABELS[state.playMode] || PLAY_MODE_LABELS.shuffle;
-  dom.btnPlayMode.innerHTML = iconByMode[state.playMode] || PLAY_MODE_SHUFFLE_SVG;
-  dom.btnPlayMode.title = label;
-  dom.btnPlayMode.setAttribute("aria-label", label);
-}
-
-function togglePlayMode() {
-  const modes = ["shuffle", "list", "single"];
-  const curIndex = modes.indexOf(state.playMode);
-  state.playMode = modes[(curIndex + 1) % modes.length];
-  if (state.playMode === "shuffle") regenerateShuffleOrder();
-  applyPlayModeUi();
-  showToast(PLAY_MODE_LABELS[state.playMode]);
-}
-
-async function togglePictureInPicture() {
-  const video = dom.videoEl;
-  if (!video?.src) {
-    showToast("暂无正在播放的视频");
-    return;
-  }
-  try {
-    if (document.pictureInPictureElement) {
-      await document.exitPictureInPicture();
-      return;
+  document.addEventListener("click", (e) => {
+    if (!state.volumeOpen || !dom.volumeControl) return;
+    if (!dom.volumeControl.contains(e.target)) {
+      setVolumePopoverOpen(false);
     }
-    if (document.pictureInPictureEnabled && !video.disablePictureInPicture) {
-      await video.requestPictureInPicture();
-      return;
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state.volumeOpen) {
+      setVolumePopoverOpen(false);
     }
-    showToast("当前浏览器不支持小窗播放");
-  } catch (err) {
-    console.error(err);
-    showToast("小窗播放失败");
-  }
-}
-
-async function toggleFullscreen() {
-  const video = dom.videoEl;
-  const target = dom.playerZoneVideo || video;
-  if (!target) return;
-
-  const doc = document;
-  const fsEl = doc.fullscreenElement || doc.webkitFullscreenElement;
-
-  try {
-    if (fsEl) {
-      if (doc.exitFullscreen) await doc.exitFullscreen();
-      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
-      return;
-    }
-    if (target.requestFullscreen) await target.requestFullscreen();
-    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
-    else if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
-    else showToast("当前浏览器不支持全屏");
-  } catch (err) {
-    console.error(err);
-    showToast("全屏失败");
-  }
-}
-
-function locateCurrentInPlaylist() {
-  if (state.currentIndex < 0) {
-    showToast("暂无正在播放的视频");
-    return;
-  }
-  if (!getFilteredIndices().includes(state.currentIndex)) {
-    showToast("当前视频不在筛选结果中，请清空或调整筛选");
-    return;
-  }
-  requestAnimationFrame(() => {
-    const card = dom.playlistGrid?.querySelector(
-      `[data-video-index="${state.currentIndex}"]`,
-    );
-    if (!card) {
-      showToast("未在列表中找到当前视频");
-      return;
-    }
-    const scrollBox = dom.playlistGrid;
-    if (!scrollBox) return;
-    const boxRect = scrollBox.getBoundingClientRect();
-    const cardRect = card.getBoundingClientRect();
-    const targetTop =
-      scrollBox.scrollTop +
-      (cardRect.top - boxRect.top) -
-      (scrollBox.clientHeight - cardRect.height) / 2;
-    scrollBox.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
   });
 }
 
-function handleVideoEnded() {
-  if (!state.videos.length) {
-    syncPlayPauseButton();
-    renderPlaylist();
-    return;
-  }
-  if (state.playMode === "single") {
-    if (!dom.videoEl) return;
-    try {
-      dom.videoEl.currentTime = 0;
-    } catch {
-      /* ignore */
-    }
-    dom.videoEl.play().catch(() => {});
-    syncPlayPauseButton();
-    renderPlaylist();
-    return;
-  }
-  const nextIdx = resolveAutoNextIndex();
-  if (nextIdx !== null) setCurrentIndex(nextIdx);
-  else {
-    syncPlayPauseButton();
-    renderPlaylist();
-  }
-}
+/* ---------- 播放队列 / 模式 / 速度 ---------- */
 
-function togglePlayPause() {
-  const filtered = getFilteredIndices();
-  if (!filtered.length) {
-    showToast(state.videos.length ? "当前筛选结果为空" : "列表为空");
-    return;
-  }
-  if (state.currentIndex < 0 || !filtered.includes(state.currentIndex)) {
-    setCurrentIndex(filtered[0]);
-    return;
-  }
-  if (!dom.videoEl) return;
-  resumeAudioContext();
-  if (dom.videoEl.paused || dom.videoEl.ended) {
-    if (dom.videoEl.ended) {
-      try {
-        dom.videoEl.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-    }
-    dom.videoEl.play().catch(() => {});
-  } else {
-    dom.videoEl.pause();
-  }
-  syncPlayPauseButton();
-  renderPlaylist();
-}
-
-function setVideoSource(url) {
-  const main = dom.videoEl;
-  const bg = dom.videoBackdrop;
-  if (!main) return;
-
-  dom.playerZoneVideo?.classList.remove("is-backdrop-ready");
-
-  if (url) {
-    main.src = url;
-    main.load();
-    if (bg) {
-      bg.src = url;
-      bg.load();
-    }
-  } else {
-    main.removeAttribute("src");
-    main.load();
-    if (bg) {
-      bg.removeAttribute("src");
-      bg.load();
-    }
-  }
-}
-
-function syncVideoBackdropTime() {
-  const main = dom.videoEl;
-  const bg = dom.videoBackdrop;
-  if (!main || !bg || !main.src || bg.readyState < 1) return;
-  if (Math.abs(bg.currentTime - main.currentTime) > 0.2) {
-    try {
-      bg.currentTime = main.currentTime;
-    } catch {
-      /* ignore */
-    }
-  }
-}
-
-function syncVideoBackdropPlayback() {
-  const main = dom.videoEl;
-  const bg = dom.videoBackdrop;
-  if (!main || !bg || !main.src) return;
-  syncVideoBackdropTime();
-  if (main.paused || main.ended) {
-    bg.pause();
-    return;
-  }
-  if (bg.paused) {
-    bg.play().catch(() => {});
-  }
-}
-
-function onMainVideoBackdropReady() {
-  if (!dom.videoEl?.src) return;
-  dom.playerZoneVideo?.classList.add("is-backdrop-ready");
-  syncVideoBackdropPlayback();
-}
-
-function bindVideoBackdropSync() {
-  const main = dom.videoEl;
-  const bg = dom.videoBackdrop;
-  if (!main || !bg || main.dataset.backdropBound) return;
-  main.dataset.backdropBound = "1";
-
-  const sync = () => syncVideoBackdropPlayback();
-  main.addEventListener("loadeddata", onMainVideoBackdropReady);
-  main.addEventListener("play", sync);
-  main.addEventListener("pause", sync);
-  main.addEventListener("seeking", syncVideoBackdropTime);
-  main.addEventListener("seeked", sync);
-  main.addEventListener("timeupdate", syncVideoBackdropTime);
-  main.addEventListener("ratechange", () => {
-    bg.playbackRate = main.playbackRate;
-  });
-  bg.addEventListener("loadeddata", onMainVideoBackdropReady);
-}
-
-function cloneVideoMeta(v) {
-  return {
-    categories: [...(v.categories || [])],
-    authors: [...(v.authors || [])],
-    roles: [...(v.roles || [])],
-    level: normalizeLevel(v?.level),
-    themeBg: v.themeBg,
-    themeFg: v.themeFg,
-  };
-}
-
-function getInfoEditMeta() {
-  const v = getCurrentVideo();
-  if (!v) return null;
-  if (infoUi.editing && infoUi.editWork) return infoUi.editWork;
-  return v;
-}
-
-function applyVideoMetaToVideo(v, meta) {
-  if (!v || !meta) return;
-  v.categories = [...meta.categories];
-  v.authors = [...meta.authors];
-  v.roles = [...meta.roles];
-  v.level = normalizeLevel(meta.level);
-  v.themeBg = meta.themeBg;
-  v.themeFg = meta.themeFg;
-}
-
-function revertInfoEditDraft() {
-  const v = getCurrentVideo();
-  const snap = infoUi.editSnapshot;
-  if (!v || !snap) return;
-  applyVideoMetaToVideo(v, snap);
-  if (v.themeBg && v.themeFg) {
-    applyTheme(v.themeBg, v.themeFg);
-  }
-}
-
-function clearInfoEditSession() {
-  infoUi.editSnapshot = null;
-  infoUi.editWork = null;
-}
-
-/** 编辑模式中切歌：丢弃上一首未保存草稿，载入当前曲目的元数据 */
-function syncInfoEditSessionToCurrentVideo() {
-  if (!infoUi.editing) return;
-  const v = getCurrentVideo();
-  if (!v) {
-    clearInfoEditSession();
-    return;
-  }
-  const meta = cloneVideoMeta(v);
-  infoUi.editSnapshot = meta;
-  infoUi.editWork = cloneVideoMeta(v);
+function getPlayableIndices() {
+  return getFilteredIndices().filter((i) => !!state.songs[i]?.url);
 }
 
 /* ---------- 搜索与筛选 ---------- */
@@ -1611,7 +2072,7 @@ function getAllFilterValuesInLibrary(kind) {
     for (let i = 1; i <= LEVEL_MAX; i++) values.add(String(i));
     return values;
   }
-  state.videos.forEach((v) => {
+  state.songs.forEach((v) => {
     filterFieldValues(v, kind).forEach((x) => {
       if (kind === "category" && isExcludedFilterCategory(x)) return;
       values.add(String(x).trim());
@@ -1621,7 +2082,6 @@ function getAllFilterValuesInLibrary(kind) {
   return values;
 }
 
-/** 移除库中已不存在的筛选项；保留仍有效但当前计数为 0 的已选项供取消 */
 function sanitizeFilterSelection() {
   sanitizeCategoryFilterSelection();
   for (const kind of ["category", "author", "role", "level"]) {
@@ -1678,41 +2138,28 @@ function filterFieldValues(v, kind) {
   return [];
 }
 
-function matchesSetWithNone(set, values, displayValues = null) {
+function matchesSetWithNone(set, values) {
   if (!set?.size) return true;
   const wantsEmpty = set.has(FILTER_NONE);
   const wantsValues = [...set].filter((k) => k !== FILTER_NONE);
   const matchEmpty = wantsEmpty && values.length === 0;
   const matchValues =
-    wantsValues.length > 0 &&
-    (displayValues || values).some((x) => wantsValues.includes(String(x)));
+    wantsValues.length > 0 && values.some((x) => wantsValues.includes(String(x)));
   if (wantsEmpty && wantsValues.length === 0) return values.length === 0;
   if (!wantsEmpty && wantsValues.length > 0) return matchValues;
   if (wantsEmpty && wantsValues.length > 0) return matchEmpty || matchValues;
   return true;
 }
 
-function videoMatchesMetaFilter(v, kind) {
+function songMatchesMetaFilter(v, kind) {
   const set = getFilterSet(kind);
   if (!set?.size) return true;
   return matchesSetWithNone(set, filterFieldValues(v, kind));
 }
 
-function videoMatchesCategoryFilter(v) {
-  return videoMatchesMetaFilter(v, "category");
-}
-
-function videoMatchesAuthorFilter(v) {
-  return videoMatchesMetaFilter(v, "author");
-}
-
-function videoMatchesRoleFilter(v) {
-  return videoMatchesMetaFilter(v, "role");
-}
-
 function countEmptyField(kind) {
   if (kind === "level") return 0;
-  return state.videos.filter((v) => filterFieldValues(v, kind).length === 0).length;
+  return state.songs.filter((v) => filterFieldValues(v, kind).length === 0).length;
 }
 
 function filterDisplayLabel(key, kind) {
@@ -1758,57 +2205,28 @@ function setLevelFilterLabelEl(el, level, suffix = "") {
   }
 }
 
-function searchKeyword() {
-  return dom.searchInput?.value.trim() || "";
-}
-
-function videoMatchesSearchKeyword(v, keyword) {
-  if (!keyword) return true;
-  const title = String(v.title || v.titleDisplay || "");
-  if (title.includes(keyword) || formatUserFacingText(title).includes(keyword)) {
-    return true;
-  }
-  const lv = normalizeLevel(v.level ?? 1);
-  if (String(lv).includes(keyword) || levelFilterLabel(lv).includes(keyword)) {
-    return true;
-  }
-  const hit = (arr) =>
-    Array.isArray(arr) &&
-    arr.some((x) => {
-      const raw = String(x ?? "");
-      return raw.includes(keyword) || formatUserFacingText(raw).includes(keyword);
-    });
-  return (
-    hit(filterFieldValues(v, "category")) ||
-    hit(v.authors) ||
-    hit(v.roles) ||
-    hit(v.tags)
-  );
-}
-
-function videoPassesFilters(v, keyword = searchKeyword()) {
-  if (keyword && !videoMatchesSearchKeyword(v, keyword)) return false;
-  if (!videoMatchesCategoryFilter(v)) return false;
-  if (!videoMatchesAuthorFilter(v)) return false;
-  if (!videoMatchesRoleFilter(v)) return false;
+function songPassesFilters(v) {
+  if (!songMatchesMetaFilter(v, "category")) return false;
+  if (!songMatchesMetaFilter(v, "author")) return false;
+  if (!songMatchesMetaFilter(v, "role")) return false;
   if (!matchesFilterLevel(filterSelection.level, v.level)) return false;
   return true;
 }
 
 function getFilteredIndices() {
-  const keyword = searchKeyword();
   const indices = [];
-  state.videos.forEach((v, index) => {
-    if (videoPassesFilters(v, keyword)) indices.push(index);
+  state.songs.forEach((v, index) => {
+    if (songPassesFilters(v)) indices.push(index);
   });
   return indices;
 }
 
 function buildFilterPools() {
-  const baseVideos = state.videos.filter((v) => videoMatchesCategoryFilter(v));
+  const baseSongs = state.songs.filter((v) => songMatchesMetaFilter(v, "category"));
 
-  const videosForAuthors = baseVideos.filter((v) => {
-    if (filterSelection.role.size && !videoMatchesRoleFilter(v)) return false;
+  const songsForCategories = state.songs.filter((v) => {
+    if (filterSelection.author.size && !songMatchesMetaFilter(v, "author")) return false;
+    if (filterSelection.role.size && !songMatchesMetaFilter(v, "role")) return false;
     if (
       filterSelection.level.size &&
       !filterSelection.level.has(String(normalizeLevel(v.level)))
@@ -1818,8 +2236,8 @@ function buildFilterPools() {
     return true;
   });
 
-  const videosForRoles = baseVideos.filter((v) => {
-    if (filterSelection.author.size && !videoMatchesAuthorFilter(v)) return false;
+  const songsForAuthors = baseSongs.filter((v) => {
+    if (filterSelection.role.size && !songMatchesMetaFilter(v, "role")) return false;
     if (
       filterSelection.level.size &&
       !filterSelection.level.has(String(normalizeLevel(v.level)))
@@ -1829,26 +2247,37 @@ function buildFilterPools() {
     return true;
   });
 
-  const videosForLevels = baseVideos.filter((v) => {
-    if (filterSelection.author.size && !videoMatchesAuthorFilter(v)) return false;
-    if (filterSelection.role.size && !videoMatchesRoleFilter(v)) return false;
+  const songsForRoles = baseSongs.filter((v) => {
+    if (filterSelection.author.size && !songMatchesMetaFilter(v, "author")) return false;
+    if (
+      filterSelection.level.size &&
+      !filterSelection.level.has(String(normalizeLevel(v.level)))
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+  const songsForLevels = baseSongs.filter((v) => {
+    if (filterSelection.author.size && !songMatchesMetaFilter(v, "author")) return false;
+    if (filterSelection.role.size && !songMatchesMetaFilter(v, "role")) return false;
     return true;
   });
 
   const categories = new Set();
-  state.videos.forEach((v) => {
+  songsForCategories.forEach((v) => {
     filterFieldValues(v, "category").forEach((c) => {
       if (!isExcludedFilterCategory(c)) categories.add(c);
     });
   });
 
   const authors = new Set();
-  videosForAuthors.forEach((v) => {
+  songsForAuthors.forEach((v) => {
     (v.authors || []).forEach((a) => authors.add(a));
   });
 
   const roles = new Set();
-  videosForRoles.forEach((v) => {
+  songsForRoles.forEach((v) => {
     (v.roles || []).forEach((r) => roles.add(r));
   });
 
@@ -1856,17 +2285,19 @@ function buildFilterPools() {
   for (let i = 1; i <= LEVEL_MAX; i++) levels.add(String(i));
 
   const countCategory = (cat) =>
-    state.videos.filter((v) => filterFieldValues(v, "category").includes(cat)).length;
+    songsForCategories.filter((v) => filterFieldValues(v, "category").includes(cat))
+      .length;
   const countAuthor = (author) =>
     author === FILTER_NONE
       ? countEmptyField("author")
-      : videosForAuthors.filter((v) => (v.authors || []).includes(author)).length;
+      : songsForAuthors.filter((v) => (v.authors || []).includes(author)).length;
   const countRole = (role) =>
     role === FILTER_NONE
       ? countEmptyField("role")
-      : videosForRoles.filter((v) => (v.roles || []).includes(role)).length;
+      : songsForRoles.filter((v) => (v.roles || []).includes(role)).length;
   const countLevel = (level) =>
-    videosForLevels.filter((v) => String(normalizeLevel(v.level)) === String(level)).length;
+    songsForLevels.filter((v) => String(normalizeLevel(v.level)) === String(level))
+      .length;
 
   return {
     categories,
@@ -1877,7 +2308,9 @@ function buildFilterPools() {
     countAuthor,
     countRole,
     countLevel,
-    countEmptyCategory: countEmptyField("category"),
+    countEmptyCategory: songsForCategories.filter(
+      (v) => filterFieldValues(v, "category").length === 0,
+    ).length,
     countEmptyAuthor: countEmptyField("author"),
     countEmptyRole: countEmptyField("role"),
   };
@@ -1920,7 +2353,9 @@ function getFilterPanelElements(kind) {
     def,
     btn: document.getElementById(def.btnId),
     panel: document.getElementById(def.panelId),
-    labelEl: document.getElementById(def.btnId)?.querySelector(".toolbar-filter-label"),
+    labelEl: document
+      .getElementById(def.btnId)
+      ?.querySelector(".toolbar-filter-label"),
   };
 }
 
@@ -1985,26 +2420,10 @@ function updateFilterButtonLabels() {
 }
 
 function setFilterOptionLabel(btn, text) {
-  btn.textContent = "";
-  btn.removeAttribute("data-split-label");
-  if (!window.SplitColor?.isActive?.()) {
-    btn.textContent = text;
-    return;
-  }
-  btn.setAttribute("data-split-label", text);
-  const wrap = document.createElement("span");
-  wrap.className = "toolbar-filter-split-wrap";
-  const left = document.createElement("span");
-  left.className = "toolbar-filter-split-text toolbar-filter-split-text--left";
-  const right = document.createElement("span");
-  right.className = "toolbar-filter-split-text toolbar-filter-split-text--right";
-  left.textContent = text;
-  right.textContent = text;
-  wrap.append(left, right);
-  btn.append(wrap);
+  btn.textContent = text;
 }
 
-function buildFilterPanel(kind, panelOptions = {}) {
+function buildFilterPanel(kind) {
   const { panel } = getFilterPanelElements(kind) || {};
   if (!panel) return;
   sanitizeFilterSelection();
@@ -2038,24 +2457,12 @@ function buildFilterPanel(kind, panelOptions = {}) {
     });
     panel.appendChild(btn);
   });
-  if (!panelOptions.skipSplitRefresh) window.SplitColor?.refresh?.();
 }
 
 function buildAllFilterPanels() {
   sanitizeFilterSelection();
   FILTER_PANELS.forEach(({ kind }) => buildFilterPanel(kind));
   updateFilterButtonLabels();
-}
-
-function refreshFilterPanelSelection(kind) {
-  const { panel } = getFilterPanelElements(kind) || {};
-  if (!panel) return;
-  const set = getFilterSet(kind);
-  panel.querySelectorAll(".toolbar-filter-option[role='option']").forEach((btn) => {
-    const value = btn.dataset.filterValue;
-    if (value === undefined) return;
-    btn.setAttribute("aria-selected", set?.has(value) ? "true" : "false");
-  });
 }
 
 function closeFilterPanel() {
@@ -2074,9 +2481,11 @@ function getFilterPanelLayer() {
 function syncFilterPanelPosition(panel, btn) {
   if (!panel || !btn) return;
   const rect = btn.getBoundingClientRect();
+  const main = document.getElementById("appMain") || document.querySelector(".main");
+  const mainTop = main?.getBoundingClientRect().top;
   panel.style.position = "fixed";
   panel.style.left = `${rect.left}px`;
-  panel.style.top = `${rect.bottom + 6}px`;
+  panel.style.top = `${Number.isFinite(mainTop) ? mainTop : rect.bottom + 6}px`;
   panel.style.width = `${rect.width}px`;
   panel.style.right = "auto";
 }
@@ -2089,7 +2498,6 @@ function mountFilterPanelToLayer(panel, btn) {
   }
   syncFilterPanelPosition(panel, btn);
   layer.setAttribute("aria-hidden", "false");
-  window.SplitColor?.refresh?.();
 }
 
 function scrollFilterPanelSelectionToCenter(panel) {
@@ -2099,7 +2507,11 @@ function scrollFilterPanelSelectionToCenter(panel) {
       '.toolbar-filter-option[role="option"][aria-selected="true"]',
     );
     if (selected) {
-      selected.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+      selected.scrollIntoView({
+        block: "center",
+        inline: "nearest",
+        behavior: "auto",
+      });
     }
   };
   requestAnimationFrame(() => {
@@ -2133,16 +2545,13 @@ function applyFiltersFromUi() {
   if (openKind) {
     openPanel = getFilterPanelElements(openKind)?.panel;
     if (openPanel) openScrollTop = openPanel.scrollTop;
-    FILTER_PANELS.forEach(({ kind }) => {
-      if (kind === openKind) refreshFilterPanelSelection(kind);
-      else buildFilterPanel(kind, { skipSplitRefresh: true });
-    });
-  } else {
-    buildAllFilterPanels();
   }
 
-  updateFilterButtonLabels();
+  FILTER_PANELS.forEach(({ kind }) => {
+    buildFilterPanel(kind);
+  });
 
+  updateFilterButtonLabels();
   renderInfoView();
   renderPlaylist();
 
@@ -2181,10 +2590,6 @@ function bindFilterEvents() {
     });
   });
 
-  dom.searchInput?.addEventListener("input", () => {
-    renderPlaylist();
-  });
-
   document.querySelectorAll(".toolbar-filter-panel").forEach((panel) => {
     panel.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -2206,525 +2611,293 @@ function bindFilterEvents() {
   });
 }
 
-/* ---------- 视频信息：标签 ---------- */
-
-function renderChips(container, items, kind) {
-  if (!container) return;
-  container.innerHTML = "";
-  const list = (items || []).map((s) => String(s).trim()).filter(Boolean);
-  const set =
-    kind === "category"
-      ? filterSelection.category
-      : kind === "author"
-        ? filterSelection.author
-        : filterSelection.role;
-
-  if (!list.length) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "info-chip is-empty";
-    btn.textContent = "暂无";
-    if (set.has(FILTER_NONE)) btn.classList.add("is-selected");
-    btn.addEventListener("click", () => {
-      if (infoUi.editing) return;
-      toggleFilterValue(kind, FILTER_NONE);
-    });
-    container.appendChild(btn);
-    return;
-  }
-
-  list.forEach((raw) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "info-chip";
-    btn.textContent = formatUserFacingText(raw);
-    const key = String(raw).trim();
-    if (set.has(key)) btn.classList.add("is-selected");
-    btn.addEventListener("click", () => {
-      if (infoUi.editing) return;
-      toggleFilterValue(kind, key);
-    });
-    container.appendChild(btn);
-  });
+function getShuffleFingerprint() {
+  return getPlayableIndices().join(",");
 }
 
-/* ---------- 视频信息：喜爱等级 ---------- */
-
-function ensureLevelBoxes() {
-  if (!dom.infoLevel) return;
-  if (
-    dom.infoLevel.dataset.ready === String(LEVEL_SLOT_COUNT) &&
-    dom.infoLevel.children.length === LEVEL_SLOT_COUNT
-  ) {
-    return;
+function shuffleIndices(indices) {
+  const list = indices.slice();
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
   }
-  dom.infoLevel.dataset.ready = String(LEVEL_SLOT_COUNT);
-  dom.infoLevel.innerHTML = "";
-  for (let i = 1; i <= LEVEL_SLOT_COUNT; i++) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "info-level-box";
-    btn.dataset.level = String(i);
-    btn.innerHTML = LEVEL_HEART_SVG;
-    if (i > LEVEL_MAX) {
-      btn.classList.add("info-level-box--hidden");
-      btn.disabled = true;
-      btn.setAttribute("aria-hidden", "true");
-      btn.tabIndex = -1;
-    } else {
-      btn.setAttribute("aria-label", `喜爱 ${i} 级`);
-      btn.addEventListener("click", () => {
-        if (!infoUi.editing || !infoUi.editWork) return;
-        infoUi.editWork.level = i;
-        renderLevel();
-      });
-    }
-    dom.infoLevel.appendChild(btn);
+  return list;
+}
+
+function regenerateShuffleOrder() {
+  state.shuffleFingerprint = getShuffleFingerprint();
+  const indices = getPlayableIndices();
+  state.shuffleOrder = indices.length ? shuffleIndices(indices) : [];
+}
+
+function syncShuffleOrder() {
+  if (state.playMode !== "shuffle") return;
+  if (state.shuffleFingerprint !== getShuffleFingerprint()) {
+    regenerateShuffleOrder();
   }
 }
 
-function renderLevel() {
-  ensureLevelBoxes();
-  const meta = getInfoEditMeta();
-  const level = normalizeLevel(meta?.level ?? 1);
-  dom.infoLevel?.querySelectorAll(".info-level-box").forEach((btn) => {
-    const lv = Number(btn.dataset.level);
-    if (lv > LEVEL_MAX) return;
-    btn.classList.toggle("is-on", lv <= level);
-  });
-}
+function resolveManualTrackIndex(direction) {
+  const list = getPlayableIndices();
+  if (!list.length) return null;
+  const cur = state.currentIndex;
 
-/* ---------- 取色盘 ---------- */
-
-function drawPaletteWheel(lightness = 50) {
-  const canvas = dom.infoColorWheel;
-  if (!canvas) return;
-  const size = canvas.width;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = size / 2;
-  const image = ctx.createImageData(size, size);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const dx = x - cx;
-      const dy = y - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const i = (y * size + x) * 4;
-      if (dist > r) {
-        image.data[i + 3] = 0;
-        continue;
-      }
-      const hue = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
-      const sat = (dist / r) * 100;
-      const [rr, gg, bb] = hslToRgb(hue, sat, lightness);
-      image.data[i] = rr;
-      image.data[i + 1] = gg;
-      image.data[i + 2] = bb;
-      image.data[i + 3] = 255;
-    }
+  if (state.playMode === "list") {
+    if (cur < 0) return list[0];
+    const pos = list.indexOf(cur);
+    if (pos === -1) return list[0];
+    if (direction < 0) return list[pos <= 0 ? list.length - 1 : pos - 1];
+    return list[pos >= list.length - 1 ? 0 : pos + 1];
   }
-  ctx.putImageData(image, 0, 0);
-}
-
-function redrawActivePalette() {
-  if (infoUi.coverViewMode === "light") drawPaletteWheel(50);
-  else if (infoUi.coverViewMode === "dark") drawPaletteWheel(18);
-}
-
-function hslToRgb(h, s, l) {
-  s /= 100;
-  l /= 100;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-  const m = l - c / 2;
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  if (h < 60) {
-    r = c;
-    g = x;
-  } else if (h < 120) {
-    r = x;
-    g = c;
-  } else if (h < 180) {
-    g = c;
-    b = x;
-  } else if (h < 240) {
-    g = x;
-    b = c;
-  } else if (h < 300) {
-    r = x;
-    b = c;
-  } else {
-    r = c;
-    b = x;
-  }
-  return [
-    Math.round((r + m) * 255),
-    Math.round((g + m) * 255),
-    Math.round((b + m) * 255),
-  ];
-}
-
-function pickColorFromWheel(clientX, clientY) {
-  const canvas = dom.infoColorWheel;
-  if (!canvas || canvas.hidden) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = Math.floor(((clientX - rect.left) / rect.width) * canvas.width);
-  const y = Math.floor(((clientY - rect.top) / rect.height) * canvas.height);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const d = ctx.getImageData(x, y, 1, 1).data;
-  if (d[3] < 128) return;
-  applyPickedColor(U.rgbToHex(d[0], d[1], d[2]));
-}
-
-function pickColorFromCover(clientX, clientY) {
-  const v = getCurrentVideo();
-  if (!v?.coverUrl || !dom.infoCoverPickCanvas) return;
-  const img = dom.infoCoverImg;
-  if (!img?.complete) return;
-  const size = 160;
-  dom.infoCoverPickCanvas.width = size;
-  dom.infoCoverPickCanvas.height = size;
-  const ctx = dom.infoCoverPickCanvas.getContext("2d");
-  if (!ctx) return;
-  ctx.drawImage(img, 0, 0, size, size);
-  const coverRect = dom.infoCoverBox.getBoundingClientRect();
-  const px = Math.floor(((clientX - coverRect.left) / coverRect.width) * size);
-  const py = Math.floor(((clientY - coverRect.top) / coverRect.height) * size);
-  const d = ctx.getImageData(px, py, 1, 1).data;
-  applyPickedColor(U.rgbToHex(d[0], d[1], d[2]));
-}
-
-function applyPickedColor(hex) {
-  const work = infoUi.editing ? infoUi.editWork : null;
-  if (infoUi.pickTarget === "component") {
-    const bg = work?.themeBg ?? getCurrentVideo()?.themeBg ?? theme.themeColor;
-    applyTheme(bg, hex);
-    if (work) work.themeFg = hex;
-    else {
-      const v = getCurrentVideo();
-      if (v) v.themeFg = hex;
-    }
-  } else {
-    const fg = work?.themeFg ?? getCurrentVideo()?.themeFg ?? theme.componentColor;
-    applyTheme(hex, fg);
-    if (work) work.themeBg = hex;
-    else {
-      const v = getCurrentVideo();
-      if (v) v.themeBg = hex;
-    }
-  }
-  updateColorPreviews();
-}
-
-function updateCoverModeButtons() {
-  dom.infoCoverMode?.querySelectorAll(".info-cover-mode-btn").forEach((btn) => {
-    const mode = btn.dataset.mode;
-    const active = infoUi.editing
-      ? infoUi.coverViewMode === mode
-      : mode === "cover";
-    btn.classList.toggle("is-active", active);
-    btn.setAttribute("aria-selected", active ? "true" : "false");
-  });
-}
-
-function setCoverViewMode(mode) {
-  if (!infoUi.editing) return;
-  if (mode !== "cover" && mode !== "light" && mode !== "dark") mode = "cover";
-  infoUi.coverViewMode = mode;
-  syncCoverDisplay();
-  if (mode === "light") drawPaletteWheel(50);
-  else if (mode === "dark") drawPaletteWheel(18);
-}
-
-function syncCoverDisplay() {
-  const v = getCurrentVideo();
-  const showWheel =
-    infoUi.editing &&
-    (infoUi.coverViewMode === "light" || infoUi.coverViewMode === "dark");
-  dom.infoColorWheel.hidden = !showWheel;
-  dom.infoCoverImg.hidden = showWheel || !v?.coverUrl;
-  dom.infoCoverPlaceholder.hidden = showWheel || !!v?.coverUrl;
-  updateCoverModeButtons();
-}
-
-function setPickTarget(target) {
-  infoUi.pickTarget = target === "component" ? "component" : "theme";
-  dom.infoThemePreview?.classList.toggle(
-    "is-active-target",
-    infoUi.editing && infoUi.pickTarget === "theme",
-  );
-  dom.infoComponentPreview?.classList.toggle(
-    "is-active-target",
-    infoUi.editing && infoUi.pickTarget === "component",
-  );
-}
-
-/* ---------- 特殊歌曲封面折角星标 ---------- */
-
-function createVideoSpecialBadgeEl(variant = "card") {
-  const badge = document.createElement("span");
-  badge.className =
-    variant === "meta"
-      ? "video-card-special-badge video-card-special-badge--meta"
-      : "video-card-special-badge";
-  badge.setAttribute("aria-hidden", "true");
-  const star = document.createElement("span");
-  star.className = "video-card-special-badge__star";
-  star.textContent = "★";
-  badge.appendChild(star);
-  return badge;
-}
-
-function syncInfoCoverSpecialBadge(v) {
-  if (!dom.infoCoverBox) return;
-  dom.infoCoverBox.querySelector(".video-card-special-badge")?.remove();
-  if (!v || !window.Special?.hasSpecialSongEffects?.(v)) return;
-  dom.infoCoverBox.appendChild(createVideoSpecialBadgeEl("meta"));
-}
-
-/* ---------- 视频列表 ---------- */
-
-function renderPlaylist() {
-  if (!dom.playlistGrid) return;
-  dom.playlistGrid.innerHTML = "";
-
-  getFilteredIndices().forEach((index) => {
-    const v = state.videos[index];
-    if (!v) return;
-    const card = document.createElement("div");
-    card.className = "video-card";
-    card.dataset.videoIndex = String(index);
-    if (index === state.currentIndex) card.classList.add("is-current");
-
-    const cover = document.createElement("button");
-    cover.type = "button";
-    cover.className = "video-card-cover";
-    cover.setAttribute("aria-label", formatUserFacingText(v.title || v.titleDisplay || "") || "播放");
-
-    const img = document.createElement("img");
-    img.className = "video-card-cover-img";
-    img.alt = "";
-    if (v.coverUrl) {
-      img.src = v.coverUrl;
-    } else {
-      img.hidden = true;
-    }
-
-    const icon = document.createElement("span");
-    icon.className = "video-card-play-icon";
-    icon.innerHTML = getPlayIconSvg(index);
-
-    cover.append(img, icon);
-
-    if (
-      index !== state.currentIndex &&
-      window.Special?.hasSpecialSongEffects?.(v)
-    ) {
-      cover.appendChild(createVideoSpecialBadgeEl("card"));
-    }
-
-    const title = document.createElement("span");
-    title.className = "video-card-title";
-    title.textContent = formatUserFacingText(v.title || v.titleDisplay || "");
-
-    cover.addEventListener("click", () => onPlaylistCoverClick(index));
-    card.append(cover, title);
-    dom.playlistGrid.appendChild(card);
-  });
 
   syncShuffleOrder();
-  window.SplitColor?.refresh?.();
+  const order = state.shuffleOrder;
+  if (!order.length) return list[0];
+  const pos = order.indexOf(cur);
+  if (pos === -1) return order[0];
+  if (direction < 0) {
+    return pos <= 0 ? order[order.length - 1] : order[pos - 1];
+  }
+  if (pos >= order.length - 1) {
+    regenerateShuffleOrder();
+    return state.shuffleOrder[0] ?? list[0];
+  }
+  return order[pos + 1];
 }
 
-function onPlaylistCoverClick(index) {
-  if (index < 0 || index >= state.videos.length) return;
-  if (state.currentIndex === index) {
-    if (!dom.videoEl) return;
-    if (dom.videoEl.paused || dom.videoEl.ended) {
-      dom.videoEl.play().catch(() => {});
-    } else {
-      dom.videoEl.pause();
-    }
+function resolveAutoNextIndex() {
+  const list = getPlayableIndices();
+  if (!list.length) return null;
+  const cur = state.currentIndex;
+
+  if (state.playMode === "list") {
+    if (cur < 0) return list[0];
+    const pos = list.indexOf(cur);
+    if (pos === -1) return list[0];
+    return list[pos >= list.length - 1 ? 0 : pos + 1];
+  }
+
+  syncShuffleOrder();
+  const order = state.shuffleOrder;
+  if (!order.length) return list[0];
+  const pos = order.indexOf(cur);
+  if (pos === -1) return order[0];
+  if (pos >= order.length - 1) {
+    regenerateShuffleOrder();
+    return state.shuffleOrder[0] ?? list[0];
+  }
+  return order[pos + 1];
+}
+
+function replayCurrentInSingleMode() {
+  const list = getPlayableIndices();
+  if (!list.length) {
+    showToast(hasImportedSongs() ? "当前列表为空" : "请先导入歌曲");
+    return;
+  }
+  if (state.currentIndex < 0 || !list.includes(state.currentIndex)) {
+    playSongAt(list[0]);
+    return;
+  }
+  if (!dom.videoEl) return;
+  resumeAudioContext();
+  try {
+    dom.videoEl.currentTime = 0;
+  } catch {
+    /* ignore */
+  }
+  dom.videoEl.play().catch(() => {});
+  syncPlayPauseButton();
+  renderPlaylist();
+}
+
+function playAdjacentTrack(direction) {
+  const list = getPlayableIndices();
+  if (!list.length) {
+    showToast(
+      hasImportedSongs()
+        ? "当前筛选结果为空"
+        : "请先导入歌曲",
+    );
+    return;
+  }
+  if (state.playMode === "single") {
+    replayCurrentInSingleMode();
+    return;
+  }
+  const idx = resolveManualTrackIndex(direction);
+  if (idx === null) return;
+  playSongAt(idx);
+}
+
+function handleVideoEnded() {
+  if (!getPlayableIndices().length) {
+    syncPlayPauseButton();
     renderPlaylist();
     return;
   }
-  setCurrentIndex(index);
-}
-
-function setCurrentIndex(index) {
-  if (index < 0 || index >= state.videos.length) return;
-  const themeToken = noteThemeSongSwitch();
-  state.currentIndex = index;
-  syncInfoEditSessionToCurrentVideo();
-  const v = state.videos[index];
-  if (dom.videoEl && v.url) {
-    setVideoSource(v.url);
-    applyPlaybackRate();
-    dom.videoEl.play().catch(() => {});
-  }
-  renderInfoView({ bumpTheme: true, refreshCover: true, themeToken });
-  renderPlaylist();
-  syncPlayPauseButton();
-  syncProgressSlider();
-  refreshMediaEffects();
-}
-
-/* ---------- 视频信息：渲染 ---------- */
-
-function renderInfoView(options = {}) {
-  const { bumpTheme = false, refreshCover = true, themeToken = themeApplyToken } = options;
-  const v = getCurrentVideo();
-  if (!v) {
-    coverTransitionToken++;
-    lastCoverSrc = null;
-    if (dom.infoNameDisplay) dom.infoNameDisplay.textContent = INFO_DEFAULT_NAME;
-    renderChips(dom.infoCategoryChips, [], "category");
-    renderChips(dom.infoAuthorChips, [], "author");
-    renderChips(dom.infoRoleChips, [], "role");
-    if (dom.infoCoverImg) {
-      dom.infoCoverImg.hidden = true;
-      dom.infoCoverImg.removeAttribute("src");
+  if (state.playMode === "single") {
+    if (!dom.videoEl) return;
+    try {
+      dom.videoEl.currentTime = 0;
+    } catch {
+      /* ignore */
     }
-    if (dom.infoCoverPlaceholder) dom.infoCoverPlaceholder.hidden = false;
-    if (dom.infoColorWheel) dom.infoColorWheel.hidden = true;
-    syncInfoCoverSpecialBadge(null);
-    renderLevel();
-    syncCoverDisplay();
-    applyTheme(DEFAULT_THEME.bgHex, DEFAULT_THEME.fgHex, { animate: false });
+    dom.videoEl.play().catch(() => {});
+    syncPlayPauseButton();
+    renderPlaylist();
     return;
   }
-
-  if (dom.infoNameDisplay) {
-    dom.infoNameDisplay.textContent = formatUserFacingText(v.title || v.titleDisplay || "");
+  const nextIdx = resolveAutoNextIndex();
+  if (nextIdx !== null) playSongAt(nextIdx);
+  else {
+    syncPlayPauseButton();
+    renderPlaylist();
   }
-
-  renderChips(dom.infoCategoryChips, v.categories || [], "category");
-  renderChips(dom.infoAuthorChips, v.authors || [], "author");
-  renderChips(dom.infoRoleChips, v.roles || [], "role");
-
-  if (infoUi.editing && infoUi.editWork) {
-    if (dom.infoCategoryInput) {
-      dom.infoCategoryInput.value = joinByComma(infoUi.editWork.categories ?? []);
-    }
-    if (dom.infoAuthorInput) {
-      dom.infoAuthorInput.value = joinByComma(infoUi.editWork.authors ?? []);
-    }
-    if (dom.infoRoleInput) {
-      dom.infoRoleInput.value = joinByComma(infoUi.editWork.roles ?? []);
-    }
-  }
-
-  if (refreshCover) {
-    setCoverImage(v.coverUrl || null, {
-      video: v,
-      themeToken,
-      animate: bumpTheme,
-    });
-  } else {
-    const themeMeta = getInfoEditMeta();
-    if (themeMeta?.themeBg && themeMeta?.themeFg) {
-      applyTheme(themeMeta.themeBg, themeMeta.themeFg, { animate: false });
-    }
-    if (dom.infoCoverImg && v.coverUrl) {
-      dom.infoCoverImg.src = v.coverUrl;
-    }
-    syncCoverDisplay();
-  }
-
-  renderLevel();
-  setPickTarget(infoUi.pickTarget);
-  syncInfoCoverSpecialBadge(v);
 }
 
-/* ---------- 编辑模式 ---------- */
+function applyPlaybackRate() {
+  if (!dom.videoEl) return;
+  dom.videoEl.playbackRate = state.playbackRate;
+}
 
-function setInfoEditing(editing, options = {}) {
-  const wasEditing = infoUi.editing;
-  if (wasEditing && !editing && !options.commit) {
-    revertInfoEditDraft();
-    clearInfoEditSession();
+function cyclePlaybackSpeed() {
+  let rate = state.playbackRate;
+  if (rate < 2) {
+    rate = Math.min(2, Math.round((rate + 0.25) * 100) / 100);
+  } else {
+    rate = 1;
   }
+  state.playbackRate = rate;
+  applyPlaybackRate();
+  showToast(`播放速度：${rate.toFixed(2)}x`);
+}
 
-  infoUi.editing = !!editing;
-  dom.infoPanelRoot?.classList.toggle("is-editing", infoUi.editing);
-  dom.infoTitleBtn?.setAttribute("aria-expanded", infoUi.editing ? "true" : "false");
+function applyPlayModeUi() {
+  if (!dom.btnPlayMode) return;
+  const iconByMode = {
+    shuffle: PLAY_MODE_SHUFFLE_SVG,
+    list: PLAY_MODE_LIST_SVG,
+    single: PLAY_MODE_SINGLE_SVG,
+  };
+  const label = PLAY_MODE_LABELS[state.playMode] || PLAY_MODE_LABELS.shuffle;
+  dom.btnPlayMode.innerHTML =
+    iconByMode[state.playMode] || PLAY_MODE_SHUFFLE_SVG;
+  dom.btnPlayMode.title = label;
+  dom.btnPlayMode.setAttribute("aria-label", label);
+}
 
-  const inputs = [
-    dom.infoCategoryInput,
-    dom.infoAuthorInput,
-    dom.infoRoleInput,
-  ];
-  inputs.forEach((el) => {
-    if (!el) return;
-    el.hidden = !infoUi.editing;
+function togglePlayMode() {
+  const modes = ["shuffle", "list", "single"];
+  const curIndex = modes.indexOf(state.playMode);
+  state.playMode = modes[(curIndex + 1) % modes.length];
+  if (state.playMode === "shuffle") regenerateShuffleOrder();
+  applyPlayModeUi();
+  showToast(PLAY_MODE_LABELS[state.playMode]);
+}
+
+async function togglePictureInPicture() {
+  const video = dom.videoEl;
+  if (!video?.src) {
+    showToast("暂无正在播放的视频");
+    return;
+  }
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+      return;
+    }
+    if (document.pictureInPictureEnabled && !video.disablePictureInPicture) {
+      await video.requestPictureInPicture();
+      return;
+    }
+    showToast("当前浏览器不支持小窗播放");
+  } catch (err) {
+    console.error(err);
+    showToast("小窗播放失败");
+  }
+}
+
+async function toggleFullscreen() {
+  const video = dom.videoEl;
+  const target =
+    document.querySelector(".player-zone-video") || video;
+  if (!target) return;
+
+  const doc = document;
+  const fsEl = doc.fullscreenElement || doc.webkitFullscreenElement;
+
+  try {
+    if (fsEl) {
+      if (doc.exitFullscreen) await doc.exitFullscreen();
+      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+      return;
+    }
+    if (target.requestFullscreen) await target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+    else if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
+    else showToast("当前浏览器不支持全屏");
+  } catch (err) {
+    console.error(err);
+    showToast("全屏失败");
+  }
+}
+
+function locateCurrentInPlaylist() {
+  if (state.currentIndex < 0) {
+    showToast("暂无正在播放的视频");
+    return;
+  }
+  const visible = getVisibleSongs();
+  if (!visible.some((s) => s.id === state.currentIndex)) {
+    showToast("当前视频不在列表中，请清空或调整筛选/搜索");
+    return;
+  }
+  requestAnimationFrame(() => {
+    const card = dom.playlistGrid?.querySelector(
+      `.song-card[data-id="${state.currentIndex}"]`,
+    );
+    if (!card) {
+      showToast("未在列表中找到当前视频");
+      return;
+    }
+    const scrollBox = dom.playlistGrid;
+    if (!scrollBox) return;
+    const boxRect = scrollBox.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const targetTop =
+      scrollBox.scrollTop +
+      (cardRect.top - boxRect.top) -
+      (scrollBox.clientHeight - cardRect.height) / 2;
+    scrollBox.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+  });
+}
+
+function bindEvents() {
+  dom.playlistTitleBtn?.addEventListener("click", openPlaylistSearch);
+
+  dom.playlistSearch?.addEventListener("input", () => {
+    state.searchQuery = dom.playlistSearch.value;
+    renderPlaylist();
   });
 
-  if (infoUi.editing) {
-    infoUi.coverViewMode = "cover";
-    setPickTarget("theme");
-  } else {
-    infoUi.coverViewMode = "cover";
-  }
-
-  renderInfoView();
-}
-
-function toggleInfoEditing() {
-  if (infoUi.editing) {
-    setInfoEditing(false);
-    showToast("已退出编辑模式");
-    return;
-  }
-  const v = getCurrentVideo();
-  if (!v) {
-    showToast("请先选择视频");
-    return;
-  }
-  const snap = cloneVideoMeta(v);
-  infoUi.editSnapshot = snap;
-  infoUi.editWork = cloneVideoMeta(v);
-  setInfoEditing(true);
-  showToast("已进入编辑模式");
-}
-
-function saveInfoEdit() {
-  const v = getCurrentVideo();
-  if (!v) return;
-  if (infoUi.editing) {
-    v.categories = splitByComma(dom.infoCategoryInput?.value);
-    v.authors = splitByComma(dom.infoAuthorInput?.value);
-    v.roles = splitByComma(dom.infoRoleInput?.value);
-    if (infoUi.editWork) {
-      v.level = normalizeLevel(infoUi.editWork.level);
-      v.themeBg = infoUi.editWork.themeBg;
-      v.themeFg = infoUi.editWork.themeFg;
+  dom.playlistSearch?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closePlaylistSearch();
     }
-    if (v.themeBg && v.themeFg) {
-      applyTheme(v.themeBg, v.themeFg);
-    }
-  }
-  clearInfoEditSession();
-  setInfoEditing(false, { commit: true });
-  sanitizeFilterSelection();
-  applyFiltersFromUi();
-  showToast("保存成功");
-}
+  });
 
-/* ---------- 事件 ---------- */
+  dom.playlistSearch?.addEventListener("blur", () => {
+    if (!dom.playlistSearch.value.trim()) closePlaylistSearch();
+  });
 
-function bindInfoEvents() {
-  dom.infoTitleBtn?.addEventListener("click", toggleInfoEditing);
+  dom.btnVizLyrics?.addEventListener("click", toggleMidChromeMode);
 
   dom.infoNameDisplay?.addEventListener("click", (e) => {
     e.stopPropagation();
     copyInfoNameToClipboard();
   });
-
   dom.infoNameDisplay?.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     e.preventDefault();
@@ -2732,490 +2905,34 @@ function bindInfoEvents() {
     copyInfoNameToClipboard();
   });
 
-  dom.infoConfirmBtn?.addEventListener("click", saveInfoEdit);
-
-  dom.infoCoverMode?.querySelectorAll(".info-cover-mode-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!infoUi.editing) return;
-      setCoverViewMode(btn.dataset.mode || "cover");
-    });
-  });
-
-  dom.infoThemePreview?.addEventListener("click", () => {
-    if (!infoUi.editing) return;
-    setPickTarget("theme");
-  });
-
-  dom.infoComponentPreview?.addEventListener("click", () => {
-    if (!infoUi.editing) return;
-    setPickTarget("component");
-  });
-
-  const onPick = (e) => {
-    if (!infoUi.editing) return;
-    if (infoUi.coverViewMode === "light" || infoUi.coverViewMode === "dark") {
-      pickColorFromWheel(e.clientX, e.clientY);
-    } else if (getCurrentVideo()?.coverUrl) {
-      pickColorFromCover(e.clientX, e.clientY);
-    }
-  };
-
-  dom.infoCoverBox?.addEventListener("click", onPick);
-  dom.infoColorWheel?.addEventListener("click", onPick);
-
-  drawPaletteWheel(50);
-  syncInfoWheelSize();
-  window.addEventListener("resize", syncInfoWheelSize);
-}
-
-function syncInfoWheelSize() {
-  const box = dom.infoCoverBox;
-  const canvas = dom.infoColorWheel;
-  if (!box || !canvas) return;
-  const w = Math.round(box.getBoundingClientRect().width) || 200;
-  if (canvas.width !== w) {
-    canvas.width = w;
-    canvas.height = w;
-    redrawActivePalette();
-  }
-}
-
-function bindPlaylistEvents() {
-  if (!dom.videoEl || dom.videoEl.dataset.playlistBound) return;
-  dom.videoEl.dataset.playlistBound = "1";
-  const refresh = () => {
-    renderPlaylist();
-    syncPlayPauseButton();
-  };
-  dom.videoEl.addEventListener("play", () => {
-    refresh();
-    resumeAudioContext();
-  });
-  dom.videoEl.addEventListener("pause", refresh);
-  dom.videoEl.addEventListener("timeupdate", syncProgressSlider);
-  dom.videoEl.addEventListener("loadedmetadata", syncProgressSlider);
-  dom.videoEl.addEventListener("seeked", syncProgressSlider);
-  dom.videoEl.addEventListener("ended", handleVideoEnded);
-  dom.videoEl.addEventListener("loadeddata", () => {
-    applyPlaybackRate();
-    syncProgressSlider();
-  });
-}
-
-/* ---------- 音频可视化 ---------- */
-
-let audioContext = null;
-let analyser = null;
-let analyserDataArray = null;
-let analyserTimeData = null;
-let visualizerRaf = 0;
-let resizeVisualizerCanvas = null;
-
-function readVisualizerShadowMetrics() {
-  const cs = getComputedStyle(document.documentElement);
-  return {
-    offsetX: parseFloat(cs.getPropertyValue("--ui-shadow-x")) || 6,
-    offsetY: parseFloat(cs.getPropertyValue("--ui-shadow-y")) || 6,
-    blurSoft: 18,
-    alphaHard: 0.4,
-    alphaSoft: 0.26,
-  };
-}
-
-function readVisualizerCenterOffsetX(canvas) {
-  const cssPx =
-    parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue("--player-viz-center-offset-x"),
-    ) || 0;
-  const rect = canvas.getBoundingClientRect();
-  if (!rect.width || !cssPx) return 0;
-  return (cssPx / rect.width) * canvas.width;
-}
-
-function drawBarsVisualizer(ctx, canvas, rgb, freqData) {
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const split = window.SplitColor?.getVisualizerSplitState?.(canvas);
-  const splitActive = split?.active;
-  const rgbLeft = splitActive ? split.rgbLeft : rgb;
-  const rgbRight = splitActive ? split.rgbRight : rgb;
-  const splitX = splitActive ? split.splitX : w / 2;
-  const shadow = readVisualizerShadowMetrics();
-
-  const barCount = 36;
-  const barMaxHeight = h * 0.85;
-  const midX = w / 2 + readVisualizerCenterOffsetX(canvas);
-  const barWidth = w / 2 / barCount;
-
-  const drawBar = (x, barHeight) => {
-    const bx = x + 2;
-    const barW = barWidth - 4;
-    const cx = bx + barW / 2;
-    const { r, g, b } = cx < splitX ? rgbLeft : rgbRight;
-    const y = h - barHeight;
-    const gradient = ctx.createLinearGradient(0, y, 0, h);
-    gradient.addColorStop(0, `rgb(${r}, ${g}, ${b})`);
-    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.35)`);
-
-    const paintFill = () => {
-      ctx.fillStyle = gradient;
-      ctx.fillRect(bx, y, barW, barHeight);
-    };
-
-    const paintShadow = (blur, alpha) => {
-      ctx.save();
-      ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-      ctx.shadowBlur = blur;
-      ctx.shadowOffsetX = shadow.offsetX;
-      ctx.shadowOffsetY = shadow.offsetY;
-      paintFill();
-      ctx.restore();
-    };
-
-    paintShadow(0, shadow.alphaHard);
-    paintShadow(shadow.blurSoft, shadow.alphaSoft);
-    paintFill();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bx, y, barW, barHeight);
-  };
-
-  for (let i = 0; i < barCount; i++) {
-    const dataIndex = Math.floor((i / barCount) * freqData.length);
-    const magnitude = freqData[dataIndex] / 255;
-    const barHeight = Math.max(2, magnitude * barMaxHeight);
-    drawBar(midX - (i + 1) * barWidth, barHeight);
-    drawBar(midX + i * barWidth, barHeight);
-  }
-
-  if (splitActive) {
-    ctx.fillStyle = `rgba(${rgbLeft.r}, ${rgbLeft.g}, ${rgbLeft.b}, 0.12)`;
-    ctx.fillRect(0, h - 6, splitX, 2);
-    ctx.fillStyle = `rgba(${rgbRight.r}, ${rgbRight.g}, ${rgbRight.b}, 0.12)`;
-    ctx.fillRect(splitX, h - 6, w - splitX, 2);
-  } else {
-    const { r, g, b } = rgb;
-    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`;
-    ctx.fillRect(0, h - 6, w, 2);
-  }
-}
-
-function setupAudioVisualization() {
-  const canvas = dom.visualizerCanvas;
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-
-  const resize = () => {
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(rect.width));
-    canvas.height = Math.max(1, Math.floor(rect.height));
-    const vizMode = window.Special?.getVisualizerMode?.();
-    if (vizMode === "ecg") window.Special?.resetEcgOnResize?.();
-    else if (vizMode === "uno") window.Special?.resetUnoOnResize?.();
-    else if (vizMode === "hero") window.Special?.resetHeroOnResize?.();
-  };
-  resizeVisualizerCanvas = resize;
-  resize();
-  window.addEventListener("resize", resize);
-
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    const initialMode = window.Special?.getVisualizerMode?.() || "bars";
-    analyser.smoothingTimeConstant = initialMode === "ecg" ? 0.28 : 0.7;
-    analyserDataArray = new Uint8Array(analyser.frequencyBinCount);
-    analyserTimeData = new Uint8Array(analyser.fftSize);
-    try {
-      const src = audioContext.createMediaElementSource(dom.videoEl);
-      src.connect(analyser);
-      analyser.connect(audioContext.destination);
-    } catch (e) {
-      if (e.name !== "InvalidStateError") {
-        console.error("创建可视化音频源失败:", e);
-      }
-    }
-  }
-
-  const draw = () => {
-    visualizerRaf = requestAnimationFrame(draw);
-    if (!analyser) return;
-    analyser.getByteFrequencyData(analyserDataArray);
-    if (analyserTimeData) analyser.getByteTimeDomainData(analyserTimeData);
-
-    const rgb = U.parseHexColor(
-      getComputedStyle(document.documentElement).getPropertyValue("--component-color").trim(),
-      RGB_BLACK,
-    );
-    const vizMode = state.specialEffectsEnabled
-      ? window.Special?.getVisualizerMode?.() || "bars"
-      : "bars";
-
-    if (vizMode === "ecg") {
-      window.Special?.drawEcgVisualizer?.(
-        ctx,
-        canvas,
-        rgb,
-        analyserDataArray,
-        analyserTimeData,
-      );
-    } else if (vizMode === "uno") {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      window.Special?.updateUnoVisualizer?.();
-    } else if (vizMode === "hero") {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      window.Special?.updateHeroVisualizer?.();
-    } else {
-      drawBarsVisualizer(ctx, canvas, rgb, analyserDataArray);
-    }
-  };
-
-  syncVisualizerMode();
-
-  if (!visualizerRaf) {
-    visualizerRaf = requestAnimationFrame(draw);
-  }
-}
-
-function resumeAudioContext() {
-  if (audioContext?.state === "suspended") {
-    audioContext.resume().catch(() => {});
-  }
-}
-
-/* ---------- 播放进度 ---------- */
-
-const PROGRESS_THUMB_PX = 18;
-
-function getProgressThumbPx() {
-  return window.Special?.getProgressThumbPx?.() ?? PROGRESS_THUMB_PX;
-}
-
-function updateProgressTrackVisual(pct) {
-  const n = Math.min(100, Math.max(0, pct));
-  dom.playerProgressTrack?.style.setProperty("--progress-pct", String(n));
-  dom.playerProgressTrack?.setAttribute("aria-valuenow", String(Math.round(n)));
-  dom.playerProgressWrap?.style.setProperty("--progress-pct", String(n));
-}
-
-function syncProgressSlider() {
-  const video = dom.videoEl;
-  if (!video?.src || !Number.isFinite(video.duration) || video.duration <= 0) {
-    updateProgressTrackVisual(0);
-    return;
-  }
-  const pct = (video.currentTime / video.duration) * 100;
-  updateProgressTrackVisual(pct);
-}
-
-function progressPctFromClientX(clientX) {
-  const track = dom.playerProgressTrack;
-  if (!track) return 0;
-  const rect = track.getBoundingClientRect();
-  if (rect.width <= 0) return 0;
-  const inset = getProgressThumbPx() / 2;
-  const travel = rect.width - getProgressThumbPx();
-  if (travel <= 0) return 0;
-  const x = clientX - rect.left - inset;
-  const ratio = x / travel;
-  return Math.min(100, Math.max(0, ratio * 100));
-}
-
-function applyProgressFromPointer(clientX) {
-  const video = dom.videoEl;
-  if (!video?.src || !Number.isFinite(video.duration) || video.duration <= 0) return;
-  const pct = progressPctFromClientX(clientX);
-  updateProgressTrackVisual(pct);
-  try {
-    video.currentTime = (pct / 100) * video.duration;
-  } catch {
-    /* ignore */
-  }
-  syncVideoBackdropTime();
-}
-
-function bindProgressEvents() {
-  U.bindPointerSlider(dom.playerProgressTrack, {
-    onMove: (e) => applyProgressFromPointer(e.clientX),
-    onKeydown: (e) => {
-      const video = dom.videoEl;
-      if (!video?.src || !Number.isFinite(video.duration) || video.duration <= 0) return;
-      const step = video.duration * 0.05;
-      let next = video.currentTime;
-      if (e.key === "ArrowRight") next = Math.min(video.duration, video.currentTime + step);
-      else if (e.key === "ArrowLeft") next = Math.max(0, video.currentTime - step);
-      else if (e.key === "Home") next = 0;
-      else if (e.key === "End") next = video.duration;
-      else return;
-      e.preventDefault();
-      try {
-        video.currentTime = next;
-      } catch {
-        /* ignore */
-      }
-      syncProgressSlider();
-      syncVideoBackdropTime();
-    },
-  });
-}
-
-/* ---------- 音量 ---------- */
-
-const volumeUi = {
-  open: false,
-};
-
-function updateVolumeTrackVisual(pct) {
-  const n = Math.min(100, Math.max(0, pct));
-  const wrap = dom.volumeTrack?.closest(".player-volume-slider-wrap");
-  wrap?.style.setProperty("--volume-pct", String(n));
-  dom.volumeTrack?.setAttribute("aria-valuenow", String(n));
-  if (dom.volumeSlider) dom.volumeSlider.value = String(n);
-}
-
-function syncVolumeSlider() {
-  if (!dom.videoEl) return;
-  const vol = dom.videoEl.muted ? 0 : dom.videoEl.volume;
-  const pct = Math.round(Math.min(1, Math.max(0, vol)) * 100);
-  updateVolumeTrackVisual(pct);
-}
-
-const VOLUME_THUMB_PX = 13;
-
-function volumePctFromClientY(clientY) {
-  const wrap = dom.volumeTrack?.closest(".player-volume-slider-wrap") || dom.volumeTrack;
-  if (!wrap) return 0;
-  const rect = wrap.getBoundingClientRect();
-  if (rect.height <= 0) return 0;
-  const inset = VOLUME_THUMB_PX / 2;
-  const travel = rect.height - VOLUME_THUMB_PX;
-  if (travel <= 0) return 0;
-  const y = clientY - rect.top - inset;
-  const ratio = 1 - y / travel;
-  return Math.round(Math.min(1, Math.max(0, ratio)) * 100);
-}
-
-function applyVolumeFromPointer(clientY) {
-  const pct = volumePctFromClientY(clientY);
-  setVideoVolume(pct / 100);
-}
-
-function setVideoVolume(normalized) {
-  const main = dom.videoEl;
-  if (!main) return;
-  const vol = Math.min(1, Math.max(0, normalized));
-  main.volume = vol;
-  main.muted = vol <= 0;
-  syncVolumeSlider();
-}
-
-function setVolumePopoverOpen(open) {
-  volumeUi.open = !!open;
-  if (dom.volumePopover) dom.volumePopover.hidden = !volumeUi.open;
-  dom.btnVolume?.setAttribute("aria-expanded", volumeUi.open ? "true" : "false");
-}
-
-function toggleVolumePopover() {
-  setVolumePopoverOpen(!volumeUi.open);
-  if (volumeUi.open) syncVolumeSlider();
-}
-
-function bindVolumeEvents() {
-  dom.btnVolume?.addEventListener("click", (e) => {
+  dom.btnInfoEdit?.addEventListener("click", (e) => {
     e.stopPropagation();
-    toggleVolumePopover();
+    toggleInfoEditing();
   });
-
-  U.bindPointerSlider(dom.volumeTrack, {
-    onMove: (e) => applyVolumeFromPointer(e.clientY),
-    onKeydown: (e) => {
-      const current = Number(dom.volumeSlider?.value || 0);
-      let next = current;
-      if (e.key === "ArrowUp" || e.key === "ArrowRight") next = Math.min(100, current + 5);
-      else if (e.key === "ArrowDown" || e.key === "ArrowLeft") next = Math.max(0, current - 5);
-      else if (e.key === "Home") next = 100;
-      else if (e.key === "End") next = 0;
-      else return;
-      e.preventDefault();
-      setVideoVolume(next / 100);
-    },
-  });
-
-  dom.volumePopover?.addEventListener("click", (e) => {
+  dom.btnInfoSave?.addEventListener("click", (e) => {
     e.stopPropagation();
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!volumeUi.open || !dom.volumeControl) return;
-    if (!dom.volumeControl.contains(e.target)) {
-      setVolumePopoverOpen(false);
+    if (!infoUi.editing) {
+      showToast("当前不在编辑模式");
+      return;
     }
+    saveInfoEdit();
+  });
+  dom.btnInfoExport?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    exportInfoWithSave().catch((err) => console.error(err));
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && volumeUi.open) {
-      setVolumePopoverOpen(false);
-    }
-  });
-}
+  bindColorPickEvents();
 
-function applyPlaylistExpandedUi() {
-  dom.appMain?.classList.toggle("is-playlist-expanded", playlistUi.expanded);
-  dom.playlistTitleBtn?.setAttribute(
-    "aria-expanded",
-    playlistUi.expanded ? "true" : "false",
-  );
-  window.SplitColor?.refresh?.();
-  window.setTimeout(() => window.SplitColor?.refresh?.(), 360);
-}
-
-function togglePlaylistExpanded() {
-  playlistUi.expanded = !playlistUi.expanded;
-  applyPlaylistExpandedUi();
-}
-
-function isKeyboardTypingTarget(el) {
-  if (!el || !(el instanceof HTMLElement)) return false;
-  const tag = el.tagName;
-  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
-  return el.isContentEditable;
-}
-
-function bindKeyboardShortcuts() {
-  document.addEventListener("keydown", (e) => {
-    if (e.code !== "Space" && e.key !== " ") return;
-    if (e.repeat) return;
-    const target = e.target;
-    if (isKeyboardTypingTarget(target)) return;
-    if (target instanceof HTMLButtonElement) return;
-    e.preventDefault();
-    togglePlayPause();
-  });
-}
-
-function bindEvents() {
-  dom.playlistTitleBtn?.addEventListener("click", togglePlaylistExpanded);
-  bindInfoEvents();
-  bindPlaylistEvents();
-  bindVideoBackdropSync();
-  bindVolumeEvents();
-  bindProgressEvents();
-  bindFilterEvents();
-  bindKeyboardShortcuts();
   dom.btnImport?.addEventListener("click", () => {
     openImportFolderPicker().catch((e) => console.error(e));
   });
-  dom.btnExportJson?.addEventListener("click", () => {
-    exportVideoJson().catch((e) => console.error(e));
-  });
   dom.btnTranslate?.addEventListener("click", toggleTranslateMode);
-  dom.btnSpecialFx?.addEventListener("click", toggleSpecialEffects);
-  dom.btnPrev?.addEventListener("click", playPreviousTrack);
+  bindVolumeEvents();
+
+  dom.btnPrev?.addEventListener("click", () => playAdjacentTrack(-1));
   dom.btnPlayPause?.addEventListener("click", togglePlayPause);
-  dom.btnNext?.addEventListener("click", playNextTrack);
+  dom.btnNext?.addEventListener("click", () => playAdjacentTrack(1));
   dom.btnSpeed?.addEventListener("click", cyclePlaybackSpeed);
   dom.btnPlayMode?.addEventListener("click", togglePlayMode);
   dom.btnPip?.addEventListener("click", () => {
@@ -3224,33 +2941,64 @@ function bindEvents() {
   dom.btnFullscreen?.addEventListener("click", () => {
     toggleFullscreen().catch((e) => console.error(e));
   });
-  dom.btnLocate?.addEventListener("click", locateCurrentInPlaylist);
+
+  dom.btnListTop?.addEventListener("click", scrollPlaylistToTop);
+  dom.btnLocate?.addEventListener("click", () => locateCurrentInPlaylist());
+  dom.btnListBottom?.addEventListener("click", scrollPlaylistToBottom);
+
+  bindFilterEvents();
+
+  if (dom.videoEl) {
+    dom.videoEl.addEventListener("timeupdate", syncProgressFromVideo);
+    dom.videoEl.addEventListener("loadedmetadata", () => {
+      applyPlaybackRate();
+      applyVolume();
+      syncProgressFromVideo();
+    });
+    dom.videoEl.addEventListener("play", () => {
+      resumeAudioContext();
+      syncPlayPauseButton();
+    });
+    dom.videoEl.addEventListener("pause", syncPlayPauseButton);
+    dom.videoEl.addEventListener("ended", handleVideoEnded);
+    dom.videoEl.addEventListener("volumechange", syncVolumeSlider);
+  }
+
+  dom.progressTrack?.addEventListener("pointerdown", (e) => {
+    dom.progressTrack.setPointerCapture?.(e.pointerId);
+    seekByClientX(e.clientX);
+    updateProgressTimeTip(e.clientX);
+  });
+  dom.progressTrack?.addEventListener("pointermove", (e) => {
+    updateProgressTimeTip(e.clientX);
+    if (e.buttons !== 1) return;
+    seekByClientX(e.clientX);
+  });
+  dom.progressTrack?.addEventListener("pointerenter", (e) => {
+    updateProgressTimeTip(e.clientX);
+  });
+  dom.progressTrack?.addEventListener("pointerleave", () => {
+    hideProgressTimeTip();
+  });
 }
 
 function init() {
-  applyTheme(theme.themeColor, theme.componentColor);
-  applyTranslateModeUi();
-  applySpecialEffectsUi();
   bindEvents();
-  if (state.currentIndex < 0 && state.videos.length) state.currentIndex = 0;
-  if (state.playMode === "shuffle") regenerateShuffleOrder();
-  applyPlayModeUi();
-  if (dom.btnSpeed) {
-    dom.btnSpeed.innerHTML = SPEED_ICON_SVG;
-    dom.btnSpeed.title = "加速";
-    dom.btnSpeed.setAttribute("aria-label", "加速");
-  }
-  renderInfoView();
-  renderPlaylist();
-  buildAllFilterPanels();
-  syncPlayPauseButton();
+  applyVolume();
   applyPlaybackRate();
-  syncProgressSlider();
+  applyPlayModeUi();
+  applyTranslateModeUi();
+  syncMidChromeModeUi();
+  syncInfoEditingUi();
+  if (state.playMode === "shuffle") regenerateShuffleOrder();
+  buildAllFilterPanels();
+  renderPlaylist();
+  renderInfoView();
+  syncProgressFromVideo();
+  syncPlayPauseButton();
+  syncBottomChromeAlignment();
+  window.addEventListener("resize", syncBottomChromeAlignment);
   setupAudioVisualization();
-  syncVolumeSlider();
-  window.Special?.init?.(playerHooks);
-  window.Special?.setEnabled?.(state.specialEffectsEnabled);
-  refreshMediaEffects();
 }
 
 if (document.readyState === "loading") {
