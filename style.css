@@ -1,4 +1,3 @@
-/* ===== 像素字体 ===== */
 @font-face {
   font-family: "Fusion Pixel";
   src: url("./fonts/fusion-pixel.woff2") format("woff2");
@@ -7,7 +6,6 @@
   font-display: swap;
 }
 
-/* ===== 设计令牌 ===== */
 :root {
   --font-pixel: "Fusion Pixel", monospace;
   --font-size: 12px;
@@ -19,13 +17,12 @@
   --btn-radius: 12px;
   --btn-border: 7px;
   --btn-gap: 8px;
-  --toolbar-gap: 16px;
 
   --progress-thumb: 18px;
   --progress-line-border: 2px;
   --progress-unplayed-inner-extra: 1px;
   --progress-thumb-border: 5px;
-  --viz-height: 65px;
+  --viz-height: 90px;
   --ctrl-size: 42px;
   --ctrl-icon-size: 22px;
   --ctrl-gap: 10px;
@@ -35,33 +32,32 @@
   --panel-pad-x: 16px;
   --panel-pad-y: 12px;
 
-  --playlist-gap-x: 16px;
-  --playlist-gap-y: 8px;
+  --playlist-gap-x: 26px;
+  --playlist-gap-y: 10px;
+  --playlist-initial-gap: 16px;
   --cover-radius: 10px;
   --cover-border: var(--panel-border);
 
   --theme-color: #ffffff;
   --component-color: #000000;
+  --component-color-rgb: 0, 0, 0;
 
-  /* 边框同色淡化阴影：右下硬偏移 */
-  --ui-shadow-color: color-mix(in srgb, var(--component-color) 40%, transparent);
-  --ui-shadow-x: 6px;
-  --ui-shadow-y: 6px;
-  /* 与频谱柱同款的白色描边发光 */
-  --ui-border-glow: 0 0 3px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.55),
-    0 0 14px rgba(255, 255, 255, 0.28);
-  /* 白光外扩半径，容器需预留以免裁切 */
-  --ui-glow-room: 14px;
-  /* 三栏操作键相对面板底边的统一 inset（不含 ctrl-bar 阴影垫） */
+  
+  --ui-shadow-x: 5px;
+  --ui-shadow-y: 5px;
+  --ui-shadow-out: var(--ui-shadow-x) var(--ui-shadow-y) 0
+    rgba(var(--component-color-rgb), 0.45);
+  --ui-shadow-in: inset var(--ui-shadow-x) var(--ui-shadow-y) 0
+    rgba(var(--component-color-rgb), 0.45);
+  --ui-shadow: var(--ui-shadow-out), var(--ui-shadow-in);
+  --ui-divider-shadow: var(--ui-shadow-out);
+  --ui-shadow-color: rgba(var(--component-color-rgb), 0.45);
+  
   --ctrl-chrome-bottom: calc(4px + var(--ui-shadow-y) - 5px);
-  /* 为浮层/贴底操作键预留的底部空间 */
+  
   --ctrl-chrome-reserve: calc(
-    var(--ui-glow-room) + var(--ctrl-size) + var(--ui-shadow-y) + var(--ctrl-chrome-bottom)
+    var(--ctrl-size) + var(--ui-shadow-y) + var(--ctrl-chrome-bottom)
   );
-  --ui-shadow: var(--ui-shadow-x) var(--ui-shadow-y) 0 var(--ui-shadow-color),
-    var(--ui-border-glow);
-  --ui-icon-glow-filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9))
-    drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
 }
 
 *,
@@ -93,7 +89,6 @@ select {
   color: inherit;
 }
 
-/* 统一按键（只用 .btn，避免列表卡片被套用） */
 .btn {
   box-sizing: border-box;
   height: var(--btn-height);
@@ -114,14 +109,12 @@ select {
   cursor: default;
 }
 
-/* 全局带边框组件：右下阴影 + 白色描边发光（对齐频谱） */
 .btn,
 .panel,
 .song-card-cover,
 .playlist-search,
 .toolbar-filter-panel,
 .volume-popover,
-.toast,
 .info-cover-box,
 .info-value-box,
 .info-chip,
@@ -130,14 +123,11 @@ select {
   box-shadow: var(--ui-shadow);
 }
 
-/* 心形等无 box-shadow 的描边件：用同款白色发光 */
 .info-level-heart,
 .level-filter-heart {
-  filter: var(--ui-icon-glow-filter)
-    drop-shadow(var(--ui-shadow-x) var(--ui-shadow-y) 0 var(--ui-shadow-color));
+  filter: drop-shadow(var(--ui-shadow-x) var(--ui-shadow-y) 0 var(--ui-shadow-color));
 }
 
-/* ===== 布局 ===== */
 .app {
   display: flex;
   flex-direction: column;
@@ -146,25 +136,30 @@ select {
   gap: 12px;
 }
 
-.toolbar {
-  flex: 0 0 auto;
-  display: flex;
-  gap: var(--toolbar-gap);
+.playlist-header.is-searching .toolbar-filter {
+  display: none !important;
 }
 
 .toolbar-filter {
   position: relative;
-  flex: 1 1 0;
   min-width: 0;
   overflow: visible;
 }
 
 .toolbar-filter:has(.toolbar-filter-panel:not([hidden])) {
-  z-index: 1;
+  z-index: 20;
 }
 
 .toolbar-filter-btn {
   width: 100%;
+  overflow: visible;
+}
+
+.toolbar-search-btn {
+  grid-column: 4;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
   overflow: visible;
 }
 
@@ -175,25 +170,16 @@ select {
   max-width: 100%;
 }
 
-.toolbar-filter-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 50000;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.toolbar-filter-layer .toolbar-filter-panel {
-  pointer-events: auto;
-  box-shadow: var(--ui-shadow);
-}
-
 .toolbar-filter-panel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 50001;
-  max-height: min(700px, 90vh);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  right: auto;
+  z-index: 30;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  max-height: min(320px, 50vh);
   overflow-x: visible;
   overflow-y: auto;
   border: var(--btn-border) solid var(--component-color);
@@ -201,14 +187,33 @@ select {
   background: var(--theme-color);
   box-shadow: var(--ui-shadow);
   scrollbar-width: none;
+  transform: translateX(-50%);
 }
 
-.toolbar-filter-panel::-webkit-scrollbar {
+.toolbar-filter:first-of-type .toolbar-filter-panel {
+  left: 0;
+  transform: none;
+}
+
+.toolbar-filter-panel::-webkit-scrollbar,
+.playlist-grid::-webkit-scrollbar,
+.ctrl-bar::-webkit-scrollbar,
+.side-view-info::-webkit-scrollbar {
   display: none;
 }
 
-.toolbar-filter-panel[hidden] {
-  display: none;
+.toolbar-filter-panel[hidden],
+.playlist-search[hidden],
+.volume-popover[hidden],
+.progress-time-tip[hidden],
+.side-view[hidden],
+.info-controls[hidden],
+.info-lyrics-empty[hidden],
+.info-lyrics-stages[hidden],
+.info-cover-img[hidden],
+.info-cover-placeholder[hidden],
+.info-input[hidden] {
+  display: none !important;
 }
 
 .toolbar-filter-option {
@@ -224,6 +229,7 @@ select {
   font-family: inherit;
   line-height: 1.25;
   text-align: center;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -246,7 +252,6 @@ select {
   align-items: center;
   justify-content: center;
   gap: 0.35em;
-  overflow: visible;
 }
 
 .toolbar-filter-option:has(.level-filter-hearts) {
@@ -255,38 +260,28 @@ select {
   align-items: center;
   justify-content: center;
   gap: 0.35em;
-  flex-wrap: nowrap;
   padding: 11px 12px;
-  overflow: visible;
   line-height: 1;
 }
 
 .level-filter-hearts {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 3px;
-  flex: 0 0 auto;
-  overflow: visible;
 }
 
 .level-filter-heart-slot {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
-  overflow: visible;
 }
 
 .level-filter-heart {
   width: 100%;
   height: 100%;
   display: block;
-  overflow: visible;
   transform: scale(0.9);
-  transform-origin: center center;
 }
 
 .level-filter-heart path {
@@ -294,40 +289,24 @@ select {
   paint-order: stroke fill;
 }
 
-.toolbar-filter-option .level-filter-heart-slot:not(.is-on) .level-filter-heart path {
+.level-filter-heart-slot:not(.is-on) .level-filter-heart path {
   fill: transparent;
   stroke: var(--component-color);
   stroke-width: 2px;
 }
-
-.toolbar-filter-option .level-filter-heart-slot.is-on .level-filter-heart path {
+.level-filter-heart-slot.is-on .level-filter-heart path {
   fill: var(--component-color);
   stroke: var(--component-color);
   stroke-width: 1.5px;
 }
-
-.toolbar-filter-btn .level-filter-heart-slot:not(.is-on) .level-filter-heart path {
-  fill: transparent;
-  stroke: var(--theme-color);
-  stroke-width: 2px;
-}
-
-.toolbar-filter-btn .level-filter-heart-slot.is-on .level-filter-heart path {
-  fill: var(--theme-color);
-  stroke: var(--theme-color);
-  stroke-width: 1.5px;
-}
-
+.toolbar-filter-btn .level-filter-heart-slot:not(.is-on) .level-filter-heart path,
 .toolbar-filter-option[aria-selected="true"] .level-filter-heart-slot:not(.is-on) .level-filter-heart path {
-  fill: transparent;
   stroke: var(--theme-color);
-  stroke-width: 2px;
 }
-
+.toolbar-filter-btn .level-filter-heart-slot.is-on .level-filter-heart path,
 .toolbar-filter-option[aria-selected="true"] .level-filter-heart-slot.is-on .level-filter-heart path {
   fill: var(--theme-color);
   stroke: var(--theme-color);
-  stroke-width: 1.5px;
 }
 
 .level-filter-label-suffix {
@@ -338,7 +317,7 @@ select {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 40%);
   gap: 16px;
 }
 
@@ -349,34 +328,19 @@ select {
   border: var(--panel-border) solid var(--component-color);
   border-radius: var(--panel-radius);
   background: transparent;
-  /* 可见以露出右下阴影；内部滚动仍由子元素自行裁切 */
+  
   overflow: visible;
 }
 
-.btn-title {
-  position: absolute;
-  z-index: 2;
-  top: var(--panel-pad-y);
-  left: var(--panel-pad-x);
-  right: var(--panel-pad-x);
-  width: auto;
-  height: var(--btn-height);
-  border-color: var(--component-color);
-  background: var(--component-color);
-  color: var(--theme-color);
-}
-
-h2.btn-title {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: default;
-  font-weight: inherit;
-}
-
 .playlist-search {
+  grid-column: 1 / 4;
+  grid-row: 1;
+  z-index: 1;
   box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  height: var(--btn-height);
+  max-height: var(--btn-height);
   margin: 0;
   padding: var(--btn-padding-y) var(--btn-padding-x);
   border: var(--btn-border) solid var(--component-color);
@@ -388,20 +352,53 @@ h2.btn-title {
   line-height: 1;
   outline: none;
   text-align: center;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.playlist-search::-webkit-search-decoration,
+.playlist-search::-webkit-search-cancel-button,
+.playlist-search::-webkit-search-results-button,
+.playlist-search::-webkit-search-results-decoration {
+  display: none;
 }
 
 .playlist-search::placeholder {
   color: color-mix(in srgb, var(--theme-color) 55%, transparent);
 }
 
-.playlist-search[hidden] {
-  display: none !important;
-}
-
-/* ===== 歌曲列表 ===== */
-.panel-playlist {
+.side-playlist {
+  position: relative;
+  flex: 2 1 0%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  gap: 0;
+  overflow: visible;
+  padding: var(--btn-gap) var(--panel-pad-x) 0;
+}
+
+.playlist-header {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  height: var(--btn-height);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--playlist-gap-x);
+  overflow: visible;
+  margin-bottom: var(--btn-gap);
+}
+
+.playlist-header-divider {
+  flex: 0 0 auto;
+  height: var(--panel-border);
+  width: calc(100% + 2 * var(--panel-pad-x));
+  margin-left: calc(-1 * var(--panel-pad-x));
+  margin-right: calc(-1 * var(--panel-pad-x));
+  background: var(--component-color);
+  box-shadow: var(--ui-divider-shadow);
 }
 
 .playlist-body {
@@ -409,6 +406,8 @@ h2.btn-title {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .playlist-grid {
@@ -418,16 +417,24 @@ h2.btn-title {
   overflow-y: auto;
   scrollbar-width: none;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--playlist-gap-y) var(--playlist-gap-x);
   align-content: start;
-  /* 上下为浮层标题键 / 滚动操作键预留可视空间 */
-  padding: calc(var(--panel-pad-y) + var(--btn-height) + var(--btn-gap) + 4px)
-    var(--panel-pad-x)
-    calc(var(--ctrl-chrome-reserve) + var(--panel-pad-y));
+  
+  margin-right: calc(-1 * var(--ui-shadow-x));
+  margin-bottom: calc(-1 * var(--ui-shadow-y));
+  padding: 0 var(--ui-shadow-x) var(--ui-shadow-y) 0;
 }
 
-.playlist-grid::-webkit-scrollbar {
+.playlist-grid::before {
+  content: "";
+  grid-column: 1 / -1;
+  height: var(--playlist-initial-gap);
+  margin-bottom: calc(-1 * var(--playlist-gap-y));
+  pointer-events: none;
+}
+
+.playlist-grid:has(.playlist-empty)::before {
   display: none;
 }
 
@@ -444,26 +451,22 @@ h2.btn-title {
   justify-items: center;
 }
 
-/* 左右浮层按键：与中间操作键共用 --ctrl-chrome-bottom */
-.playlist-controls,
-.info-controls {
+.playlist-controls {
   position: absolute;
-  z-index: 2;
+  z-index: 5;
   left: var(--panel-pad-x);
   right: var(--panel-pad-x);
   bottom: var(--ctrl-chrome-bottom);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-top: var(--ui-glow-room);
   overflow: visible;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
 }
 
-.playlist-controls.is-visible,
-.panel-playlist:hover .playlist-controls {
+.panel-side:hover .playlist-controls {
   opacity: 1;
   pointer-events: auto;
 }
@@ -531,6 +534,85 @@ h2.btn-title {
   display: flex;
 }
 
+.song-card.is-current .video-card-special-badge {
+  display: none;
+}
+
+/* 特殊歌曲：封面左上角折角星标（折角=组件色，星星=主题色） */
+.video-card-special-badge {
+  --hero-badge-size: 32px;
+  --hero-badge-fold-radius: var(--cover-radius, 10px);
+  --hero-badge-fold-clip: path("M -3 13 A 13 13 0 0 1 13 -3 H 36 L -3 36 Z");
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: var(--hero-badge-size);
+  height: var(--hero-badge-size);
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.video-card-special-badge--meta {
+  --hero-badge-size: 44px;
+  --hero-badge-fold-clip: path("M -4 18 A 18 18 0 0 1 18 -4 H 50 L -4 50 Z");
+}
+
+.video-card-special-badge::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  z-index: 0;
+  width: calc(var(--hero-badge-fold-radius) + 8px);
+  height: calc(var(--hero-badge-fold-radius) + 8px);
+  background: var(--component-color);
+  border-top-left-radius: calc(var(--hero-badge-fold-radius) + 3px);
+  box-shadow:
+    -2px -2px 0 0 var(--component-color),
+    -1px -1px 0 0 var(--component-color);
+}
+
+.video-card-special-badge::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  z-index: 1;
+  width: calc(var(--hero-badge-size) + 3px);
+  height: calc(var(--hero-badge-size) + 3px);
+  background: var(--component-color);
+  clip-path: var(--hero-badge-fold-clip);
+  box-shadow:
+    1px 1px 0 color-mix(in srgb, var(--theme-color) 14%, transparent),
+    inset -1px -1px 0 color-mix(in srgb, var(--theme-color) 8%, transparent);
+}
+
+.video-card-special-badge__star {
+  position: absolute;
+  z-index: 2;
+  line-height: 1;
+  font-weight: 800;
+  color: var(--theme-color);
+  pointer-events: none;
+}
+
+.song-card-cover .video-card-special-badge__star {
+  top: 1px;
+  left: 2px;
+  font-size: 14px;
+}
+
+.video-card-special-badge--meta .video-card-special-badge__star {
+  top: 2px;
+  left: 3px;
+  font-size: 19px;
+}
+
+.info-cover-box .video-card-special-badge {
+  z-index: 4;
+}
+
 .song-card-play-icon svg {
   width: 70%;
   height: 70%;
@@ -548,7 +630,6 @@ h2.btn-title {
   white-space: nowrap;
 }
 
-/* ===== 中间播放栏 ===== */
 .panel-player {
   display: flex;
   flex-direction: column;
@@ -559,9 +640,8 @@ h2.btn-title {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 0 0 var(--ctrl-chrome-reserve);
+  padding: var(--panel-pad-y) var(--panel-pad-x) 0;
   gap: 0;
-  /* 可见以露出操作键上方白光；视频区自行裁切 */
   overflow: visible;
 }
 
@@ -569,23 +649,17 @@ h2.btn-title {
   min-width: 0;
 }
 
-.player-divider {
-  flex: 0 0 auto;
-  height: var(--panel-border);
-  margin: var(--btn-gap) 0;
-  background: var(--component-color);
-  border-radius: 0;
-}
-
-/* 1. 视频：全宽 16:9，无圆角描边（对齐原设计） */
 .player-zone-video {
   position: relative;
   flex: 0 0 auto;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1920 / 1080;
   overflow: hidden;
   background: #000;
   box-sizing: border-box;
+  border-radius: var(--panel-radius);
+  margin-bottom: var(--btn-gap);
+  box-shadow: var(--ui-shadow);
 }
 
 .player-video {
@@ -598,18 +672,28 @@ h2.btn-title {
   background: transparent;
 }
 
-/* 进度条：贴在视频底边的细线轨道（对齐原设计） */
 .progress-wrap {
-  flex: 0 0 var(--progress-thumb);
+  flex: 0 0 auto;
   position: relative;
   z-index: 100;
-  display: flex;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   align-items: center;
+  column-gap: 10px;
   width: 100%;
-  margin-top: calc(var(--progress-thumb) / -2);
-  margin-bottom: calc(var(--progress-thumb) / -2);
-  pointer-events: none;
+  min-height: var(--progress-thumb);
+  margin-bottom: var(--btn-gap);
   isolation: isolate;
+}
+
+.progress-time {
+  flex: 0 0 auto;
+  color: var(--component-color);
+  font-size: var(--font-size);
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
 .progress-track {
@@ -617,18 +701,17 @@ h2.btn-title {
   position: relative;
   z-index: 0;
   width: 100%;
-  height: var(--panel-border);
+  height: 14px;
   box-sizing: border-box;
-  border: none;
-  border-top: var(--progress-line-border) solid var(--component-color);
-  border-bottom: var(--progress-line-border) solid var(--component-color);
-  border-radius: 0;
+  border: var(--progress-line-border) solid var(--component-color);
+  border-radius: 999px;
   background: var(--theme-color);
   overflow: visible;
   touch-action: none;
   cursor: pointer;
   user-select: none;
   pointer-events: auto;
+  box-shadow: var(--ui-shadow);
 }
 
 .progress-track:focus {
@@ -650,9 +733,10 @@ h2.btn-title {
   right: 0;
   top: 50%;
   z-index: 0;
-  height: calc(100% + var(--progress-unplayed-inner-extra));
+  height: calc(100% - 2px);
   transform: translateY(-50%);
   background: var(--theme-color);
+  border-radius: 0 999px 999px 0;
   pointer-events: none;
 }
 
@@ -666,7 +750,7 @@ h2.btn-title {
     var(--progress-thumb) / 2 +
       (100% - var(--progress-thumb)) * var(--progress-pct) / 100
   );
-  border-radius: 0;
+  border-radius: 999px 0 0 999px;
   background: var(--component-color);
   pointer-events: none;
 }
@@ -712,14 +796,20 @@ h2.btn-title {
   box-shadow: var(--ui-shadow);
 }
 
-.progress-time-tip[hidden] {
-  display: none !important;
+.player-divider {
+  flex: 0 0 auto;
+  height: var(--panel-border);
+  width: calc(100% + 2 * var(--panel-pad-x));
+  margin-left: calc(-1 * var(--panel-pad-x));
+  margin-right: calc(-1 * var(--panel-pad-x));
+  background: var(--component-color);
+  box-shadow: var(--ui-divider-shadow);
 }
 
-/* 2. 可视化 / 歌词：固定高度；左右贴齐区域框；底边紧贴下方分割线 */
 .player-zone-viz {
   position: relative;
   flex: 0 0 var(--viz-height);
+  height: var(--viz-height);
   min-height: var(--viz-height);
   max-height: var(--viz-height);
   display: flex;
@@ -729,97 +819,21 @@ h2.btn-title {
   overflow: hidden;
 }
 
-.player-zone-viz.is-lyrics .viz-canvas {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.player-zone-viz.is-lyrics .viz-lyrics {
-  display: flex;
-}
-
-/* 下方分割线贴紧可视化底边；减小与操作键间距以上移按键 */
-.player-body > .player-zone-viz + .player-divider {
-  margin-top: 0;
-  margin-bottom: 4px;
-}
-
 .viz-canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.viz-lyrics {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 12px;
-  box-sizing: border-box;
-  text-align: center;
-  pointer-events: none;
-}
-
-.viz-lyrics-empty {
-  color: var(--component-color);
-  opacity: 0.55;
-  font-size: 18px;
-  line-height: 1.1;
-  text-shadow: var(--ui-border-glow);
-}
-
-.viz-lyrics-current {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  max-width: 100%;
-  color: var(--component-color);
-}
-
-.viz-lyrics-current[hidden],
-.viz-lyrics-empty[hidden] {
-  display: none !important;
-}
-
-.viz-lyrics-orig {
-  font-size: 20px;
-  line-height: 1.1;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  text-shadow: var(--ui-border-glow);
-}
-
-.viz-lyrics-trans {
-  font-size: 17px;
-  line-height: 1.1;
-  opacity: 0.92;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  text-shadow: var(--ui-border-glow);
-}
-
-.viz-lyrics-trans:empty {
-  display: none;
-}
-
-/* 3. 操作键：与左右栏同一套贴底绝对定位，保证三栏底边一致 */
 .player-zone-controls {
-  position: absolute;
+  position: relative;
   z-index: 120;
-  left: 0;
-  right: 0;
-  bottom: var(--ctrl-chrome-bottom);
   flex: 0 0 auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: var(--ui-glow-room) var(--panel-pad-x) 0;
+  margin: 12px 0 0;
+  padding: 0;
   overflow: visible;
 }
 
@@ -829,17 +843,11 @@ h2.btn-title {
   justify-content: center;
   align-items: center;
   gap: var(--ctrl-gap);
-  /* 随内容收缩，由父级居中；避免 width:100% + 单侧阴影内边距把整组挤偏 */
   width: max-content;
   max-width: 100%;
-  /* 勿 hidden：白光会向上外扩，需四向 visible */
   overflow: visible;
   padding: 0 var(--ui-shadow-x) var(--ui-shadow-y);
   scrollbar-width: none;
-}
-
-.ctrl-bar::-webkit-scrollbar {
-  display: none;
 }
 
 .btn-icon {
@@ -879,10 +887,6 @@ h2.btn-title {
   box-shadow: var(--ui-shadow);
 }
 
-.volume-popover[hidden] {
-  display: none;
-}
-
 .volume-slider {
   writing-mode: vertical-lr;
   direction: rtl;
@@ -900,87 +904,227 @@ h2.btn-title {
   outline-offset: -4px;
 }
 
-/* ===== Toast ===== */
-.toast {
-  position: fixed;
-  left: 50%;
-  /* 垂直位置由 JS 与操作按键底边对齐 */
-  bottom: calc(12px + var(--panel-border) + 4px + var(--ui-shadow-y) + var(--ui-shadow-y));
-  z-index: 10000;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: var(--ctrl-size);
-  min-height: var(--ctrl-size);
-  max-height: var(--ctrl-size);
-  transform: translateX(-50%) translateY(12px);
-  padding: 0 var(--btn-padding-x);
-  border: var(--btn-border) solid var(--component-color);
-  border-radius: var(--btn-radius);
-  background: var(--component-color);
-  color: var(--theme-color);
-  font-size: var(--btn-font-size);
-  line-height: 1;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  box-shadow: var(--ui-shadow);
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ===== 歌曲信息栏 ===== */
-.panel-info {
+.panel-side {
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-.info-view {
+.side-header {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--btn-height);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0;
+  border-bottom: var(--panel-border) solid var(--component-color);
+  box-shadow: var(--ui-divider-shadow);
+}
+
+.side-tab-btn {
+  min-width: 0;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--component-color);
+}
+
+.side-tab-btn + .side-tab-btn {
+  border-left: var(--panel-border) solid var(--component-color);
+}
+
+.side-tab-btn.is-active {
+  background: var(--component-color);
+  color: var(--theme-color);
+}
+
+.side-tab-btn:first-child.is-active {
+  border-top-left-radius: calc(var(--panel-radius) - var(--panel-border));
+}
+
+.side-tab-btn:last-child.is-active {
+  border-top-right-radius: calc(var(--panel-radius) - var(--panel-border));
+}
+
+.side-meta {
+  
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: calc(var(--btn-height) + var(--btn-gap) + 4px) 0 var(--btn-gap);
+}
+
+.side-meta-divider {
+  flex: 0 0 auto;
+  height: var(--panel-border);
+  width: 100%;
+  background: var(--component-color);
+  box-shadow: var(--ui-divider-shadow);
+}
+
+.side-view {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.side-view-info,
+.side-view-lyrics {
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow-x: visible;
   overflow-y: auto;
   scrollbar-width: none;
-  padding: calc(var(--panel-pad-y) + var(--btn-height) + var(--btn-gap) + 4px)
-    var(--panel-pad-x)
-    calc(var(--ctrl-chrome-reserve) + var(--panel-pad-y));
+  padding: 0 var(--panel-pad-x);
 }
 
-.info-controls.is-visible,
-.panel-info:hover .info-controls:not([hidden]) {
+.side-view-lyrics {
+  gap: 0;
+  overflow: hidden;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.panel-side.is-info-mode .info-controls:not([hidden]) {
   opacity: 1;
   pointer-events: auto;
 }
 
-.info-controls[hidden] {
+.panel-side:not(.is-info-mode) .info-controls {
   display: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
+}
+
+.info-controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  opacity: 1;
+  pointer-events: auto;
+  overflow: visible;
 }
 
 .info-controls .ctrl-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ctrl-gap);
   width: auto;
+  overflow: visible;
+  padding: 0 var(--ui-shadow-x) var(--ui-shadow-y) 0;
 }
 
-.panel-info.is-editing #btnInfoEdit {
+.panel-side.is-editing #btnInfoEdit {
   outline: 2px solid var(--theme-color);
   outline-offset: -4px;
 }
 
-.info-view[hidden] {
-  display: none !important;
+.info-lyrics-empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--component-color);
+  opacity: 0.55;
+  font-size: var(--btn-font-size);
+  text-align: center;
+  padding: 0 var(--panel-pad-x);
 }
 
-.info-view::-webkit-scrollbar {
-  display: none;
+.info-lyrics-stages {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 var(--ui-shadow-x) var(--ui-shadow-y) 0;
+  box-sizing: border-box;
+}
+
+.info-lyrics-slot {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  padding: 6px var(--panel-pad-x);
+  box-sizing: border-box;
+  text-align: center;
+  color: var(--component-color);
+  overflow: hidden;
+}
+
+.info-lyrics-current {
+  flex: 1.15 1 0%;
+}
+
+.info-lyrics-current.is-active {
+  position: relative;
+  z-index: 1;
+  background: var(--component-color);
+  color: var(--theme-color);
+  box-shadow: var(--ui-shadow);
+}
+
+.info-lyrics-slot .info-lyrics-orig,
+.info-lyrics-slot .info-lyrics-trans {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  line-height: 1.35;
+}
+.info-lyrics-slot .info-lyrics-orig { font-size: 18px; }
+.info-lyrics-slot .info-lyrics-trans { font-size: 15px; opacity: 0.9; }
+.info-lyrics-current.is-active .info-lyrics-orig {
+  font-size: 22px;
+  transform: scale(1.08);
+  transform-origin: center;
+}
+.info-lyrics-current.is-active .info-lyrics-trans {
+  opacity: 1;
+  font-size: 17px;
+  transform: scale(1.06);
+  transform-origin: center;
+}
+.info-lyrics-slot .info-lyrics-trans:empty { display: none; }
+.info-lyrics-prev,
+.info-lyrics-next { opacity: 0.85; }
+
+.info-layout {
+  display: grid;
+  grid-template-columns: minmax(96px, 32%) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.info-row-cover,
+.info-fields {
+  align-self: start;
+}
+
+.info-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 
 .info-row {
@@ -993,6 +1137,7 @@ h2.btn-title {
 
 .info-row-cover {
   display: block;
+  min-width: 0;
 }
 
 .info-label {
@@ -1036,26 +1181,20 @@ h2.btn-title {
   image-rendering: auto;
 }
 
-.info-cover-img[hidden],
-.info-cover-placeholder[hidden] {
-  display: none !important;
-}
-
-.panel-info.is-editing .info-cover-box {
+.panel-side.is-editing .info-cover-box {
   cursor: pointer;
 }
 
-html.is-picking-color .panel-info.is-editing .info-cover-box,
+html.is-picking-color .panel-side.is-editing .info-cover-box,
 html.is-info-editing.is-picking-color .player-zone-video,
 html.is-info-editing.is-picking-color .player-video {
   cursor: crosshair;
 }
 
-.info-value-box {
+.info-value-box,
+.info-chip,
+.info-input {
   box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
   min-height: 28px;
   padding: 3px 8px;
   border: var(--panel-border) solid var(--component-color);
@@ -1064,23 +1203,20 @@ html.is-info-editing.is-picking-color .player-video {
   color: var(--component-color);
   font-size: var(--font-size);
   line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   box-shadow: var(--ui-shadow);
 }
 
-#infoNameDisplay {
-  cursor: pointer;
+.info-value-box {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-#infoNameDisplay:focus {
-  outline: none;
-}
-
-#infoNameDisplay:focus-visible {
-  outline: 2px solid var(--component-color);
-  outline-offset: 2px;
+.panel-side.is-editing #infoNameDisplay {
+  display: none;
 }
 
 .info-chips {
@@ -1091,38 +1227,24 @@ html.is-info-editing.is-picking-color .player-video {
 }
 
 .info-chip {
-  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   max-width: 100%;
-  min-height: 28px;
-  padding: 3px 8px;
-  border: var(--panel-border) solid var(--component-color);
-  border-radius: var(--btn-radius);
-  background: var(--theme-color);
-  color: var(--component-color);
   font: inherit;
-  font-size: var(--font-size);
-  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-shadow: var(--ui-shadow);
   cursor: pointer;
   appearance: none;
 }
 
-.info-chip.is-empty {
-  opacity: 0.55;
-}
-
+.info-chip.is-empty { opacity: 0.55; }
 .info-chip.is-selected {
   background: var(--component-color);
   color: var(--theme-color);
 }
-
-.panel-info.is-editing .info-chip {
+.panel-side.is-editing .info-chip {
   cursor: default;
   pointer-events: none;
 }
@@ -1148,7 +1270,7 @@ html.is-info-editing.is-picking-color .player-video {
   justify-content: center;
 }
 
-.panel-info.is-editing .info-level-heart-btn {
+.panel-side.is-editing .info-level-heart-btn {
   cursor: pointer;
 }
 
@@ -1208,7 +1330,7 @@ html.is-info-editing.is-picking-color .player-video {
   cursor: default;
 }
 
-.panel-info.is-editing .info-sq {
+.panel-side.is-editing .info-sq {
   cursor: pointer;
 }
 
@@ -1226,31 +1348,16 @@ html.is-info-editing.is-picking-color .player-video {
 }
 
 .info-input {
-  box-sizing: border-box;
   width: 100%;
-  min-height: 28px;
   margin: 0;
-  padding: 3px 8px;
-  border: var(--panel-border) solid var(--component-color);
-  border-radius: var(--btn-radius);
-  background: var(--theme-color);
-  color: var(--component-color);
   font: inherit;
-  font-size: var(--font-size);
-  line-height: 1.4;
   outline: none;
-  box-shadow: var(--ui-shadow);
 }
 
-.info-input[hidden] {
+.panel-side:not(.is-editing) .info-input {
   display: none !important;
 }
 
-.panel-info:not(.is-editing) .info-input {
-  display: none !important;
-}
-
-.panel-info.is-editing .info-chips {
+.panel-side.is-editing .info-chips {
   display: none;
 }
-

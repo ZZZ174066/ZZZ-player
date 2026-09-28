@@ -3,137 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>本地视频分类播放器</title>
-    <link rel="stylesheet" href="./style.css" />
+    <title>本地视频播放器</title>
+    <link rel="stylesheet" href="./style.css?v=107" />
   </head>
   <body>
     <div id="app" class="app">
-      <header class="toolbar" aria-label="筛选">
-        <div class="toolbar-filter">
-          <button
-            type="button"
-            class="btn toolbar-filter-btn"
-            id="filterCategoryBtn"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-          >
-            <span class="toolbar-filter-label">筛选分类</span>
-          </button>
-          <div class="toolbar-filter-panel" id="filterCategoryPanel" role="listbox" hidden></div>
-        </div>
-        <div class="toolbar-filter">
-          <button
-            type="button"
-            class="btn toolbar-filter-btn"
-            id="filterAuthorBtn"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-          >
-            <span class="toolbar-filter-label">筛选作者</span>
-          </button>
-          <div class="toolbar-filter-panel" id="filterAuthorPanel" role="listbox" hidden></div>
-        </div>
-        <div class="toolbar-filter">
-          <button
-            type="button"
-            class="btn toolbar-filter-btn"
-            id="filterRoleBtn"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-          >
-            <span class="toolbar-filter-label">筛选歌手</span>
-          </button>
-          <div class="toolbar-filter-panel" id="filterRolePanel" role="listbox" hidden></div>
-        </div>
-        <div class="toolbar-filter">
-          <button
-            type="button"
-            class="btn toolbar-filter-btn"
-            id="filterLevelBtn"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-          >
-            <span class="toolbar-filter-label">喜爱等级</span>
-          </button>
-          <div class="toolbar-filter-panel" id="filterLevelPanel" role="listbox" hidden></div>
-        </div>
-      </header>
-
       <main class="main" id="appMain">
-        <section class="panel panel-playlist" aria-label="歌曲列表">
-          <button type="button" class="btn btn-title" id="playlistTitleBtn">歌曲列表</button>
-          <input
-            type="search"
-            class="btn-title playlist-search"
-            id="playlistSearch"
-            placeholder="搜索歌名/作者/歌手"
-            aria-label="搜索歌曲"
-            hidden
-          />
-          <div class="playlist-body">
-            <div class="playlist-grid" id="playlistGrid"></div>
-          </div>
-          <div class="playlist-controls" id="playlistControls" aria-hidden="true">
-            <div class="ctrl-bar" role="toolbar" aria-label="列表控制">
-              <button type="button" class="btn btn-icon" id="btnListTop" title="返回顶部" aria-label="返回顶部">
-                <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M39.3846 0h945.2307692307693v157.53846153846155h-945.2307692307693V0zM984.6154 708.9231h-236.30769230769232v315.0769230769231h-472.61538461538464V708.9230769230769h-236.30769230769232l472.6154-472.6154L984.6154 708.9231z"/></svg>
-              </button>
-              <button type="button" class="btn btn-icon" id="btnLocate" title="定位" aria-label="定位">
-                <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M512 415.185455c-53.527273 0-96.814545 43.287273-96.814545 96.814545s43.287273 96.814545 96.814545 96.814545 96.814545-43.287273 96.814545-96.814545-43.287273-96.814545-96.814545-96.814545z"/><path fill="currentColor" d="M936.96 480.349091h-59.578182c-14.894545-177.803636-156.392727-318.836364-334.196363-334.196364V87.04c0-17.221818-13.963636-31.650909-31.65091-31.650909s-31.185455 13.963636-31.185454 31.650909v59.578182c-177.803636 14.894545-318.836364 156.392727-334.196364 334.196363H87.04c-17.221818 0-31.650909 13.963636-31.650909 31.185455s13.963636 31.650909 31.650909 31.650909h59.578182c14.894545 177.803636 156.392727 318.836364 334.196363 334.196364v59.578182c0 17.221818 13.963636 31.185455 31.185455 31.185454s31.650909-13.963636 31.650909-31.185454v-59.578182c177.803636-14.894545 318.836364-156.392727 334.196364-334.196364h59.578182c17.221818 0 31.185455-13.963636 31.185454-31.650909s-13.963636-31.185455-31.185454-31.185455z m-393.774545 334.196364v-39.098182c0-17.221818-13.963636-31.185455-31.65091-31.185455s-31.185455 13.963636-31.185454 31.185455v39.098182a305.152 305.152 0 0 1-271.36-271.36h39.098182c17.221818 0 31.650909-13.963636 31.650909-31.65091s-13.963636-31.185455-31.650909-31.185454h-39.098182a305.152 305.152 0 0 1 271.36-271.36v39.098182c0 17.221818 13.963636 31.650909 31.185454 31.650909s31.650909-13.963636 31.65091-31.650909v-39.098182c142.894545 14.894545 256.465455 128.465455 271.36 271.36h-39.098182c-17.221818 0-31.185455 13.963636-31.185455 31.185454s13.963636 31.650909 31.185455 31.65091h39.098182a305.152 305.152 0 0 1-271.36 271.36z"/></svg>
-              </button>
-              <button type="button" class="btn btn-icon" id="btnListBottom" title="返回底部" aria-label="返回底部">
-                <svg class="icon-flip-y" viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M39.3846 0h945.2307692307693v157.53846153846155h-945.2307692307693V0zM984.6154 708.9231h-236.30769230769232v315.0769230769231h-472.61538461538464V708.9230769230769h-236.30769230769232l472.6154-472.6154L984.6154 708.9231z"/></svg>
-              </button>
-            </div>
-          </div>
-        </section>
         <section class="panel panel-player" aria-label="歌曲播放">
           <div class="player-body">
-            <!-- 1. 视频播放 + 进度（样式对齐原设计） -->
             <div class="player-zone player-zone-video">
               <video id="videoElement" class="player-video" playsinline></video>
             </div>
+
             <div class="progress-wrap" id="progressWrap">
-              <div
-                class="progress-track"
-                id="progressTrack"
-                role="slider"
-                tabindex="0"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-                aria-label="播放进度"
-              >
+              <span class="progress-time" id="progressTimeCurrent">0:00</span>
+              <div class="progress-track" id="progressTrack" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="播放进度">
                 <div class="progress-fill" id="progressFill" aria-hidden="true"></div>
                 <div class="progress-thumb" id="progressThumb" aria-hidden="true"></div>
-                <div class="progress-time-tip" id="progressTimeTip" hidden aria-hidden="true">0:00</div>
+                <div class="progress-time-tip" id="progressTimeTip" hidden>0:00</div>
               </div>
+              <span class="progress-time" id="progressTimeDuration">0:00</span>
             </div>
 
-            <!-- 2. 音频可视化 / 当前歌词 -->
-            <div class="player-zone player-zone-viz" id="playerZoneViz">
-              <canvas id="visualizerCanvas" class="viz-canvas" aria-hidden="true"></canvas>
-              <div class="viz-lyrics" id="vizLyrics" hidden>
-                <div class="viz-lyrics-empty" id="vizLyricsEmpty">暂无歌词</div>
-                <div class="viz-lyrics-current" id="vizLyricsCurrent" hidden>
-                  <div class="viz-lyrics-orig" id="vizLyricsOrig"></div>
-                  <div class="viz-lyrics-trans" id="vizLyricsTrans"></div>
-                </div>
-              </div>
-            </div>
             <div class="player-divider" aria-hidden="true"></div>
 
-            <!-- 3. 操作按键 -->
+            <div class="player-zone player-zone-viz" id="playerZoneViz">
+              <canvas id="visualizerCanvas" class="viz-canvas" aria-hidden="true"></canvas>
+            </div>
+
+            <div class="player-divider" aria-hidden="true"></div>
+
             <div class="player-zone player-zone-controls">
               <div class="ctrl-bar" role="toolbar" aria-label="播放控制">
                 <button type="button" class="btn btn-icon" id="btnImport" title="导入" aria-label="导入">
                   <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M612.37248 411.62752V30.208h-200.74496v381.41952H30.208v200.74496h381.41952v381.41952h200.74496V612.37248h381.41952v-200.74496z"/></svg>
                 </button>
-                <button type="button" class="btn btn-icon" id="btnVizLyrics" title="歌词" aria-label="歌词" aria-pressed="false">
-                  <svg viewBox="-8 -8 1040 1040" aria-hidden="true"><path fill="currentColor" d="M927.27050913-6.45970103L96.72949087-6.45970103C39.73034507-6.45970103-6.45970103 40.10740668-6.45970103 96.72949087l0 830.47817565C-6.45970103 984.26965493 40.10740668 1030.45970103 96.72949087 1030.45970103l830.47817565 0c56.9991458 0 103.18919189-46.56710769 103.18919189-103.1891919L1030.39685694 96.72949087C1030.45970103 39.73034507 983.89259332-6.45970103 927.27050913-6.45970103zM935.69155253 936.19430083c0-0.43990567-847.88585338-0.50274831-847.88585336-0.5027483C88.24560484 935.69155253 88.30844747 87.80569917 88.30844747 87.80569917 88.30844747 88.24560484 936.19430083 88.30844747 936.19430083 88.30844747 935.75439516 88.30844747 935.69155253 936.19430083 935.69155253 936.19430083z"/><path fill="currentColor" d="M794.29345226 761.61477969l0.50274831 0.25137488L794.79620057 272.88010103c-1.69677721-27.39981014-20.54985724-41.97952441-56.49639603-43.6763016L435.07943344 229.20379943c-18.85308003 1.69677721-29.09658734 13.69990433-30.85620715 35.94653879 1.69677721 22.24663444 12.00312714 34.24976158 30.85620715 35.94653878l280.03108266 0c5.15317571 0 7.72976282 2.57658711 7.7297628 7.72976282l0 416.21316312 0.69127913 0.37706161-96.90483141 0c-9.86644571 0-25.89156372 12.82009443-27.14843524 33.36995167 1.25687152 22.24663444 14.89393324 34.24976158 27.14843524 35.94653878l145.73430869 0C785.30681645 793.16226745 792.59667504 782.10179284 794.29345226 761.61477969zM460.78246639 403.9090073c-17.15630283-1.69677721-26.51999876-13.69990433-28.27962006-35.9465388 1.69677721-20.54985724 11.12331723-31.67317446 28.27962006-33.36995166l210.65174811 0c20.54985724 1.69677721 31.67317446 12.82009443 33.36995167 33.36995166-1.69677721 22.24663444-12.00312714 34.24976158-30.85620718 35.9465388L460.78246639 403.9090073zM250.88484147 298.58313397C240.82986497 296.88635678 218.45754382 284.88322964 217.45204573 262.5737511 218.45754382 242.02389387 237.18493715 230.90057665 247.30275628 229.20379943l82.82786545 0c12.12881531 1.69677721 29.47364895 12.82009443 30.47914557 33.36995167C359.66711329 284.88322964 341.25393897 296.88635678 330.13062173 298.58313397L250.88484147 298.58313397zM350.30341737 723.53155803l0-301.6492806c1.69677721-37.70616007-12.82009443-55.6794302-43.6763016-53.98265301L244.97754258 367.89962442C226.12446254 369.65924572 215.88095671 381.66237286 214.12133541 403.9090073c1.69677721 24.00625573 12.00312714 36.82635015 30.85620717 38.52312736L270.68057552 442.43213466c5.15317571 0 7.72976282 2.57658711 7.72976282 7.72976282l0 304.41439851c-0.12568672 0.7541232-0.18853081 1.5710905-0.1885308 2.38805632 0.18853081 4.46189513 1.25687152 8.48388603 2.8908061 12.12881531 4.27336431 14.01412332 11.62606554 21.30398045 28.15393335 25.38881397 2.76511791 0.43990567 5.46739321-0.12568672 8.1696685-1.57109051l72.39582735 0c10.68341152-1.69677721 30.60483376-13.69990433 31.61033038-35.94653877-0.94265401-20.54985724-19.92142077-31.67317446-31.61033038-33.36995168 0 0-17.91042605 0-36.63781938 0L350.30341737 723.59440212zM494.21526067 691.66985277c-35.94653878 0-53.98265298-17.15630283-53.98265299-51.40606442L440.23260915 491.26161197c0-34.24976158 15.39668155-51.40606442 46.25289018-51.40606441l151.5787635 0c35.94653878 0 53.10284161 14.57971571 51.40606441 43.67630159l0 156.7319392c0 34.24976158-15.39668155 51.40606442-46.25289017 51.40606442L494.21526067 691.66985277zM512.18853081 617.13734252c1.69677721 3.45639851 4.27336431 5.97014151 7.72976281 7.7297628l89.92919177 0c5.15317571 0 7.72976282-2.57658711 7.72976282-7.7297628L617.57724821 516.9646449c0-5.15317571-2.57658711-7.72976282-7.72976282-7.72976281L519.85544953 509.23488209c-5.15317571 0-7.72976282 2.57658711-7.72976281 7.72976281L512.12568672 617.13734252z"/></svg>
-                </button>
-                <button type="button" class="btn btn-icon" id="btnTranslate" title="翻译" aria-label="翻译">
-                  <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M213.333333 682.666667v42.666666a85.333333 85.333333 0 0 0 78.933334 85.12L298.666667 810.666667h85.333333a42.666667 42.666667 0 0 1 0 85.333333H298.666667a170.666667 170.666667 0 0 1-170.666667-170.666667v-42.666666a42.666667 42.666667 0 0 1 85.333333 0z m560.042667-242.602667l170.666667 426.666667a21.333333 21.333333 0 0 1-19.84 29.269333h-45.994667a21.333333 21.333333 0 0 1-19.797333-13.397333L812.544 768h-174.506667l-45.781333 114.602667a21.333333 21.333333 0 0 1-19.84 13.397333H526.506667a21.333333 21.333333 0 0 1-19.797334-29.269333l170.666667-426.666667a21.333333 21.333333 0 0 1 19.797333-13.397333h56.405334a21.333333 21.333333 0 0 1 19.84 13.397333zM725.333333 549.76L672.128 682.666667h106.325333L725.333333 549.76zM341.333333 106.666667V170.666667h149.333334a21.333333 21.333333 0 0 1 21.333333 21.333333v256a21.333333 21.333333 0 0 1-21.333333 21.333333H341.333333v106.666667a21.333333 21.333333 0 0 1-21.333333 21.333333h-42.666667a21.333333 21.333333 0 0 1-21.333333-21.333333V469.333333H106.666667a21.333333 21.333333 0 0 1-21.333334-21.333333v-256a21.333333 21.333333 0 0 1 21.333334-21.333333H256V106.666667a21.333333 21.333333 0 0 1 21.333333-21.333334h42.666667a21.333333 21.333333 0 0 1 21.333333 21.333334z m384 21.333333a170.666667 170.666667 0 0 1 170.666667 170.666667v42.666666a42.666667 42.666667 0 0 1-85.333333 0V298.666667a85.333333 85.333333 0 0 0-85.333334-85.333334h-85.333333a42.666667 42.666667 0 0 1 0-85.333333h85.333333zM256 256H170.666667v128h85.333333V256z m170.666667 0H341.333333v128h85.333334V256z"/></svg>
+                <button type="button" class="btn btn-icon" id="btnPlayMode" title="播放模式" aria-label="播放模式">
+                  <svg viewBox="0 0 1170 1024" aria-hidden="true"><path fill="currentColor" d="M950.616094 1023.999269a73.124315 73.124315 0 0 1-51.918264-21.206052 73.124315 73.124315 0 0 1 0-103.836527l21.937295-21.206051H731.243149a73.124315 73.124315 0 0 1-62.155668-34.368428L325.403201 292.75612H73.124315a73.124315 73.124315 0 0 1 0-146.24863h292.49726a73.124315 73.124315 0 0 1 62.155667 34.368428l121.386363 193.779434 119.923876-193.779434A73.124315 73.124315 0 0 1 731.243149 146.50749h189.391976l-21.937295-21.206051A73.124315 73.124315 0 0 1 1002.534357 21.464911l146.24863 146.24863a73.124315 73.124315 0 0 1 0 103.836527l-146.24863 146.24863a73.124315 73.124315 0 0 1-103.836527-103.836527l21.937295-21.206051h-146.24863l-138.936198 219.372944 136.011225 219.372945h146.24863l-21.937294-21.206051a73.124315 73.124315 0 0 1 103.836527-103.836527l146.24863 146.248629a73.124315 73.124315 0 0 1 0 103.836528l-146.24863 146.248629A73.124315 73.124315 0 0 1 950.616094 1023.999269z m-584.994519-146.24863H73.124315a73.124315 73.124315 0 0 1 0-146.24863h253.010129l25.593511-40.218373a73.124315 73.124315 0 0 1 122.848849 79.705503l-47.530805 73.124315A73.124315 73.124315 0 0 1 365.621575 877.750639z"/></svg>
                 </button>
                 <div class="volume-control" id="volumeControl">
                   <div class="volume-popover" id="volumePopover" hidden role="group" aria-label="音量调节">
@@ -164,9 +70,6 @@
                 <button type="button" class="btn btn-icon" id="btnSpeed" title="加速" aria-label="加速">
                   <svg viewBox="0 0 1260 1024" aria-hidden="true"><path fill="currentColor" d="M77.738464 1011.260664l536.872038-462.255925a50.350711 50.350711 0 0 0 0-72.796208L77.738464 12.739336A46.104265 46.104265 0 0 0 0.089175 48.530806v926.331753a46.104265 46.104265 0 0 0 77.649289 36.398105z m629.687204 0l536.872038-462.255925a49.744076 49.744076 0 0 0 0-72.796208L707.425668 12.739336a46.104265 46.104265 0 0 0-77.649289 36.398105v925.725118a46.104265 46.104265 0 0 0 77.649289 36.398105z"/></svg>
                 </button>
-                <button type="button" class="btn btn-icon" id="btnPlayMode" title="播放模式" aria-label="播放模式">
-                  <svg viewBox="0 0 1170 1024" aria-hidden="true"><path fill="currentColor" d="M950.616094 1023.999269a73.124315 73.124315 0 0 1-51.918264-21.206052 73.124315 73.124315 0 0 1 0-103.836527l21.937295-21.206051H731.243149a73.124315 73.124315 0 0 1-62.155668-34.368428L325.403201 292.75612H73.124315a73.124315 73.124315 0 0 1 0-146.24863h292.49726a73.124315 73.124315 0 0 1 62.155667 34.368428l121.386363 193.779434 119.923876-193.779434A73.124315 73.124315 0 0 1 731.243149 146.50749h189.391976l-21.937295-21.206051A73.124315 73.124315 0 0 1 1002.534357 21.464911l146.24863 146.24863a73.124315 73.124315 0 0 1 0 103.836527l-146.24863 146.24863a73.124315 73.124315 0 0 1-103.836527-103.836527l21.937295-21.206051h-146.24863l-138.936198 219.372944 136.011225 219.372945h146.24863l-21.937294-21.206051a73.124315 73.124315 0 0 1 103.836527-103.836527l146.24863 146.248629a73.124315 73.124315 0 0 1 0 103.836528l-146.24863 146.248629A73.124315 73.124315 0 0 1 950.616094 1023.999269z m-584.994519-146.24863H73.124315a73.124315 73.124315 0 0 1 0-146.24863h253.010129l25.593511-40.218373a73.124315 73.124315 0 0 1 122.848849 79.705503l-47.530805 73.124315A73.124315 73.124315 0 0 1 365.621575 877.750639z"/></svg>
-                </button>
                 <button type="button" class="btn btn-icon" id="btnPip" title="小窗" aria-label="小窗">
                   <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M896 128a42.666667 42.666667 0 0 1 42.666667 42.666667v298.666666h-85.333334V213.333333H170.666667v597.333334h256v85.333333H128a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667h768z m0 426.666667a42.666667 42.666667 0 0 1 42.666667 42.666666v256a42.666667 42.666667 0 0 1-42.666667 42.666667h-341.333333a42.666667 42.666667 0 0 1-42.666667-42.666667v-256a42.666667 42.666667 0 0 1 42.666667-42.666666h341.333333zM286.165333 268.501333l96 96L469.333333 277.333333V512H234.666667l87.168-87.168-96-96 60.330666-60.330667z"/></svg>
                 </button>
@@ -177,115 +80,168 @@
             </div>
           </div>
         </section>
-        <section class="panel panel-info" id="infoPanelRoot" aria-label="歌曲信息">
-          <h2 class="btn btn-title" id="infoTitleBtn">歌曲信息</h2>
-          <div class="info-view" id="infoView">
-            <div class="info-row info-row-cover">
-              <div class="info-cover-box" id="infoCoverBox">
-                <span class="info-cover-placeholder" id="infoCoverPlaceholder">封面</span>
-                <img id="infoCoverImg" class="info-cover-img" alt="" hidden />
-              </div>
-            </div>
 
-            <div class="info-row">
-              <span class="info-label">名称：</span>
-              <div class="info-field">
-                <div
-                  class="info-value-box"
-                  id="infoNameDisplay"
-                  title="点击复制"
-                  role="button"
-                  tabindex="0"
-                  aria-label="点击复制歌名"
-                ></div>
-              </div>
-            </div>
+        <section class="panel panel-side" id="infoPanelRoot" aria-label="侧栏">
+          <div class="side-header" id="infoHeader">
+            <button type="button" class="btn side-tab-btn is-active" id="infoTabSongBtn">歌曲信息</button>
+            <button type="button" class="btn side-tab-btn" id="infoTabLyricsBtn">歌词信息</button>
+          </div>
 
-            <div class="info-row">
-              <span class="info-label">分类：</span>
-              <div class="info-field">
-                <div class="info-chips" id="infoCategoryChips"></div>
-                <input
-                  type="text"
-                  class="info-input"
-                  id="infoCategoryInput"
-                  placeholder="用中文逗号分隔"
-                  hidden
-                />
-              </div>
-            </div>
-
-            <div class="info-row">
-              <span class="info-label">作者：</span>
-              <div class="info-field">
-                <div class="info-chips" id="infoAuthorChips"></div>
-                <input
-                  type="text"
-                  class="info-input"
-                  id="infoAuthorInput"
-                  placeholder="用中文逗号分隔"
-                  hidden
-                />
-              </div>
-            </div>
-
-            <div class="info-row">
-              <span class="info-label">歌手：</span>
-              <div class="info-field">
-                <div class="info-chips" id="infoRoleChips"></div>
-                <input
-                  type="text"
-                  class="info-input"
-                  id="infoRoleInput"
-                  placeholder="用中文逗号分隔"
-                  hidden
-                />
-              </div>
-            </div>
-
-            <div class="info-row info-row-colors">
-              <div class="info-field info-field-colors">
-                <div class="info-color-item">
-                  <span class="info-color-caption">背景：</span>
-                  <button
-                    type="button"
-                    class="info-sq info-sq-theme"
-                    id="infoThemePreview"
-                    title="背景色"
-                    aria-label="背景色"
-                  ></button>
+          <div class="side-meta" id="sideMeta">
+            <div class="side-view side-view-info info-view" id="infoView" role="tabpanel">
+              <div class="info-layout">
+                <div class="info-row info-row-cover">
+                  <div class="info-cover-box" id="infoCoverBox">
+                    <span class="info-cover-placeholder" id="infoCoverPlaceholder">封面</span>
+                    <img id="infoCoverImg" class="info-cover-img" alt="" hidden />
+                  </div>
                 </div>
-                <div class="info-color-item">
-                  <span class="info-color-caption">组件：</span>
-                  <button
-                    type="button"
-                    class="info-sq info-sq-component"
-                    id="infoComponentPreview"
-                    title="组件色"
-                    aria-label="组件色"
-                  ></button>
+
+                <div class="info-fields">
+                  <div class="info-row">
+                    <span class="info-label">名称：</span>
+                    <div class="info-field">
+                      <div class="info-value-box" id="infoNameDisplay"></div>
+                      <input
+                        type="text"
+                        class="info-input"
+                        id="infoNameInput"
+                        placeholder="歌曲名称"
+                        hidden
+                      />
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <span class="info-label">作者：</span>
+                    <div class="info-field">
+                      <div class="info-chips" id="infoAuthorChips"></div>
+                      <input
+                        type="text"
+                        class="info-input"
+                        id="infoAuthorInput"
+                        placeholder="用中文逗号分隔"
+                        hidden
+                      />
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <span class="info-label">歌手：</span>
+                    <div class="info-field">
+                      <div class="info-chips" id="infoRoleChips"></div>
+                      <input
+                        type="text"
+                        class="info-input"
+                        id="infoRoleInput"
+                        placeholder="用中文逗号分隔"
+                        hidden
+                      />
+                    </div>
+                  </div>
+
+                  <div class="info-row info-row-colors">
+                    <div class="info-field info-field-colors">
+                      <div class="info-color-item">
+                        <span class="info-color-caption">背景：</span>
+                        <button
+                          type="button"
+                          class="info-sq info-sq-theme"
+                          id="infoThemePreview"
+                          title="背景色"
+                          aria-label="背景色"
+                        ></button>
+                      </div>
+                      <div class="info-color-item">
+                        <span class="info-color-caption">组件：</span>
+                        <button
+                          type="button"
+                          class="info-sq info-sq-component"
+                          id="infoComponentPreview"
+                          title="组件色"
+                          aria-label="组件色"
+                        ></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <span class="info-label">喜爱：</span>
+                    <div class="info-field">
+                      <div class="info-level" id="infoLevel" role="group" aria-label="喜爱等级"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-controls" id="infoControls" aria-hidden="false">
+                  <div class="ctrl-bar" role="toolbar" aria-label="信息操作">
+                    <button type="button" class="btn btn-icon" id="btnInfoEdit" title="编辑" aria-label="编辑" aria-pressed="false">
+                      <svg viewBox="0 0 1025 1024" aria-hidden="true"><path fill="currentColor" d="M1004.437 161.66L898.89 266.925 758.106 126.556l105.58-105.264c19.43-19.38 50.945-19.38 70.375 0l70.376 70.193c19.43 19.364 19.43 50.795 0 70.176zM265.212 617.77L405.98 758.157l-187.607 46.723 46.84-187.108z m598.474-315.774L441.45 723.05 300.716 582.716l422.202-421.055 140.768 140.335zM111.28 184.432v730.049h730.065V366.953l109.52-73.002v693.548c0 27.592-8.91 36.501-36.518 36.501H51.743c-27.592 0-49.981-22.356-49.981-49.948V111.43c0-27.591 8.876-36.5 36.5-36.5h693.565L622.325 184.432H111.281z"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-icon" id="btnInfoSave" title="保存" aria-label="保存">
+                      <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M170.666667 128h597.333333l115.498667 115.498667a42.666667 42.666667 0 0 1 12.501333 30.165333V853.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667z m128 42.666667v213.333333h384V170.666667H298.666667z m-42.666667 341.333333v298.666667h512v-298.666667H256z m298.666667-298.666667h85.333333v128h-85.333333V213.333333z"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-icon" id="btnInfoExport" title="导出" aria-label="导出">
+                      <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M687.57 58.3v141.9h149.48zM193.07 157.95h-70.99V877.5h576.06v-69.77H193.07z"/><path fill="currentColor" d="M637.72 58.3h-398.7v709.99h598.03V247.73H637.74l-0.02-189.43z m-59.95 542.17v-83.64H364.08v-95.49h213.69V337.7l181.54 131.38-181.54 131.39z"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="info-row">
-              <span class="info-label">喜爱：</span>
-              <div class="info-field">
-                <div class="info-level" id="infoLevel" role="group" aria-label="喜爱等级"></div>
+            <div class="side-view side-view-lyrics info-lyrics-view" id="infoLyricsView" role="tabpanel" hidden>
+              <div class="info-lyrics-empty" id="infoLyricsEmpty">暂无歌词</div>
+              <div class="info-lyrics-stages" id="infoLyricsScroller">
+                <div class="info-lyrics-slot info-lyrics-prev" id="infoLyricsPrev" aria-label="上一句"></div>
+                <div class="info-lyrics-slot info-lyrics-current" id="infoLyricsCurrent" aria-label="当前歌词"></div>
+                <div class="info-lyrics-slot info-lyrics-next" id="infoLyricsNext" aria-label="下一句"></div>
               </div>
             </div>
           </div>
-          <div class="info-controls" id="infoControls" aria-hidden="true">
-            <div class="ctrl-bar" role="toolbar" aria-label="信息操作">
-              <button type="button" class="btn btn-icon" id="btnInfoEdit" title="编辑" aria-label="编辑" aria-pressed="false">
-                <svg viewBox="0 0 1025 1024" aria-hidden="true"><path fill="currentColor" d="M1004.437 161.66L898.89 266.925 758.106 126.556l105.58-105.264c19.43-19.38 50.945-19.38 70.375 0l70.376 70.193c19.43 19.364 19.43 50.795 0 70.176zM265.212 617.77L405.98 758.157l-187.607 46.723 46.84-187.108z m598.474-315.774L441.45 723.05 300.716 582.716l422.202-421.055 140.768 140.335zM111.28 184.432v730.049h730.065V366.953l109.52-73.002v693.548c0 27.592-8.91 36.501-36.518 36.501H51.743c-27.592 0-49.981-22.356-49.981-49.948V111.43c0-27.591 8.876-36.5 36.5-36.5h693.565L622.325 184.432H111.281z"/></svg>
+
+          <div class="side-meta-divider" aria-hidden="true"></div>
+
+          <div class="side-playlist" id="playlistView">
+            <div class="playlist-header" id="playlistHeader">
+              <div class="toolbar-filter">
+                <button type="button" class="btn toolbar-filter-btn" id="filterAuthorBtn" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="toolbar-filter-label">作者</span>
+                </button>
+                <div class="toolbar-filter-panel" id="filterAuthorPanel" role="listbox" hidden></div>
+              </div>
+              <div class="toolbar-filter">
+                <button type="button" class="btn toolbar-filter-btn" id="filterRoleBtn" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="toolbar-filter-label">歌手</span>
+                </button>
+                <div class="toolbar-filter-panel" id="filterRolePanel" role="listbox" hidden></div>
+              </div>
+              <div class="toolbar-filter">
+                <button type="button" class="btn toolbar-filter-btn" id="filterLevelBtn" aria-haspopup="listbox" aria-expanded="false">
+                  <span class="toolbar-filter-label">喜爱</span>
+                </button>
+                <div class="toolbar-filter-panel" id="filterLevelPanel" role="listbox" hidden></div>
+              </div>
+              <button type="button" class="btn toolbar-search-btn" id="btnPlaylistSearch" title="搜索">
+                <span class="toolbar-filter-label">搜索</span>
               </button>
-              <button type="button" class="btn btn-icon" id="btnInfoSave" title="保存" aria-label="保存">
-                <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M170.666667 128h597.333333l115.498667 115.498667a42.666667 42.666667 0 0 1 12.501333 30.165333V853.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667z m128 42.666667v213.333333h384V170.666667H298.666667z m-42.666667 341.333333v298.666667h512v-298.666667H256z m298.666667-298.666667h85.333333v128h-85.333333V213.333333z"/></svg>
-              </button>
-              <button type="button" class="btn btn-icon" id="btnInfoExport" title="导出" aria-label="导出">
-                <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M687.57 58.3v141.9h149.48zM193.07 157.95h-70.99V877.5h576.06v-69.77H193.07z"/><path fill="currentColor" d="M637.72 58.3h-398.7v709.99h598.03V247.73H637.74l-0.02-189.43z m-59.95 542.17v-83.64H364.08v-95.49h213.69V337.7l181.54 131.38-181.54 131.39z"/></svg>
-              </button>
+              <input type="search" class="playlist-search" id="playlistSearch" placeholder="搜索歌名/作者/歌手" hidden />
+            </div>
+            <div class="playlist-header-divider" aria-hidden="true"></div>
+            <div class="playlist-body">
+              <div class="playlist-grid" id="playlistGrid"></div>
+            </div>
+            <div class="playlist-controls" id="playlistControls" aria-hidden="false">
+              <div class="ctrl-bar" role="toolbar" aria-label="列表控制">
+                <button type="button" class="btn btn-icon" id="btnListTop" title="返回顶部" aria-label="返回顶部">
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M39.3846 0h945.2307692307693v157.53846153846155h-945.2307692307693V0zM984.6154 708.9231h-236.30769230769232v315.0769230769231h-472.61538461538464V708.9230769230769h-236.30769230769232l472.6154-472.6154L984.6154 708.9231z"/></svg>
+                </button>
+                <button type="button" class="btn btn-icon" id="btnLocate" title="定位" aria-label="定位">
+                  <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M512 415.185455c-53.527273 0-96.814545 43.287273-96.814545 96.814545s43.287273 96.814545 96.814545 96.814545 96.814545-43.287273 96.814545-96.814545-43.287273-96.814545-96.814545-96.814545z"/><path fill="currentColor" d="M936.96 480.349091h-59.578182c-14.894545-177.803636-156.392727-318.836364-334.196363-334.196364V87.04c0-17.221818-13.963636-31.650909-31.65091-31.650909s-31.185455 13.963636-31.185454 31.650909v59.578182c-177.803636 14.894545-318.836364 156.392727-334.196364 334.196363H87.04c-17.221818 0-31.650909 13.963636-31.650909 31.185455s13.963636 31.650909 31.650909 31.650909h59.578182c14.894545 177.803636 156.392727 318.836364 334.196363 334.196364v59.578182c0 17.221818 13.963636 31.185455 31.185455 31.185454s31.650909-13.963636 31.650909-31.185454v-59.578182c177.803636-14.894545 318.836364-156.392727 334.196364-334.196364h59.578182c17.221818 0 31.185455-13.963636 31.185454-31.650909s-13.963636-31.185455-31.185454-31.185455z m-393.774545 334.196364v-39.098182c0-17.221818-13.963636-31.185455-31.65091-31.185455s-31.185455 13.963636-31.185454 31.185455v39.098182a305.152 305.152 0 0 1-271.36-271.36h39.098182c17.221818 0 31.650909-13.963636 31.650909-31.65091s-13.963636-31.185455-31.650909-31.185454h-39.098182a305.152 305.152 0 0 1 271.36-271.36v39.098182c0 17.221818 13.963636 31.650909 31.185454 31.650909s31.650909-13.963636 31.65091-31.650909v-39.098182c142.894545 14.894545 256.465455 128.465455 271.36 271.36h-39.098182c-17.221818 0-31.185455 13.963636-31.185455 31.185454s13.963636 31.650909 31.185455 31.65091h39.098182a305.152 305.152 0 0 1-271.36 271.36z"/></svg>
+                </button>
+                <button type="button" class="btn btn-icon" id="btnListBottom" title="返回底部" aria-label="返回底部">
+                  <svg class="icon-flip-y" viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M39.3846 0h945.2307692307693v157.53846153846155h-945.2307692307693V0zM984.6154 708.9231h-236.30769230769232v315.0769230769231h-472.61538461538464V708.9230769230769h-236.30769230769232l472.6154-472.6154L984.6154 708.9231z"/></svg>
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -293,9 +249,7 @@
     </div>
 
     <canvas id="infoCoverPickCanvas" hidden aria-hidden="true"></canvas>
-    <div id="toolbarFilterLayer" class="toolbar-filter-layer" aria-hidden="true"></div>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script src="./main.js"></script>
+    <script src="./main.js?v=98"></script>
   </body>
 </html>
