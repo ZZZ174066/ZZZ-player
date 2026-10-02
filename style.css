@@ -129,11 +129,411 @@ select {
 }
 
 .app {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
   padding: 12px;
   gap: 12px;
+}
+
+.app-theme-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--theme-color);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.app > :not(.app-theme-backdrop) {
+  position: relative;
+  z-index: 1;
+}
+
+body.special-song-bg-active .app-theme-backdrop {
+  background: transparent;
+}
+
+.relation-arrow-canvas,
+.ideal-float-canvas,
+.poison-show-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: block;
+}
+
+/* 展示中毒：普通黑白（视频画面除外；星空画布不受滤镜） */
+body.poison-show-active.poison-bw-on .main > .panel:not(.panel-player),
+body.poison-show-active.poison-bw-on .player-body > :not(.player-zone-video) {
+  filter: grayscale(var(--poison-bw, 0));
+}
+
+/* 展示中毒：色散（与奇境同源 SVG） */
+body.poison-show-active.poison-chroma-on #app {
+  filter: url(#fxChroma);
+}
+
+body.poison-show-active.poison-bw-on .panel-player {
+  border-color: color-mix(
+    in srgb,
+    var(--component-color) calc((1 - var(--poison-bw, 0)) * 100%),
+    #808080
+  );
+  box-shadow: var(--ui-shadow-x) var(--ui-shadow-y) 0
+    color-mix(
+      in srgb,
+      rgba(var(--component-color-rgb), 0.45) calc((1 - var(--poison-bw, 0)) * 100%),
+      rgba(80, 80, 80, 0.45)
+    );
+}
+
+body.poison-show-active.poison-bw-on .player-zone-video {
+  box-shadow: var(--ui-shadow-x) var(--ui-shadow-y) 0
+    color-mix(
+      in srgb,
+      rgba(var(--component-color-rgb), 0.45) calc((1 - var(--poison-bw, 0)) * 100%),
+      rgba(80, 80, 80, 0.45)
+    );
+}
+
+.bottom-march-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bottom-march-item {
+  position: absolute;
+  left: 0;
+  bottom: var(--march-bottom, 0);
+  height: var(--march-item-h, 140px);
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+
+.fruit-march-item {
+  transform-origin: center bottom;
+}
+
+.exorcism-text-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.exorcism-text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  padding: 0;
+  color: #000000;
+  font-family: "Cinzel", "Times New Roman", "Noto Serif", Georgia, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  line-height: 1;
+  text-shadow: none;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity, left, top;
+}
+
+/* 混沌布吉：背景旋转圆环 + 左侧框两角对称小人 */
+body.chaos-boogie-active .app-theme-backdrop {
+  --chaos-boogie-ring-size: min(1040px, 84vw);
+  --chaos-boogie-ring-offset-y: -18vh;
+}
+
+.chaos-boogie-bg-ring {
+  position: absolute;
+  z-index: 1;
+  width: var(--chaos-boogie-ring-size, 1040px);
+  height: var(--chaos-boogie-ring-size, 1040px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  animation: chaos-boogie-ring-spin 36s linear infinite;
+}
+
+@keyframes chaos-boogie-ring-spin {
+  from {
+    transform: translate(-50%, calc(-50% + var(--chaos-boogie-ring-offset-y, 0px)))
+      rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, calc(-50% + var(--chaos-boogie-ring-offset-y, 0px)))
+      rotate(-360deg);
+  }
+}
+
+.chaos-boogie-corner-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.chaos-boogie-player-fx,
+.about-you-player-fx,
+.tiny-me-player-fx,
+.overwrite-player-fx {
+  filter: drop-shadow(var(--ui-shadow-x) var(--ui-shadow-y) 0 var(--ui-shadow-color));
+}
+
+.chaos-boogie-player-fx {
+  position: absolute;
+  bottom: 0;
+  height: clamp(140px, 32%, 240px);
+  width: auto;
+  max-width: 44%;
+  object-fit: contain;
+  object-position: bottom left;
+  pointer-events: none;
+  user-select: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.chaos-boogie-player-fx--left {
+  left: 0;
+  transform: none;
+}
+
+.chaos-boogie-player-fx--right {
+  right: 0;
+  left: auto;
+  object-position: bottom right;
+  transform: scaleX(-1);
+  transform-origin: center bottom;
+}
+
+/* 说的就是你啊！：播放器框左右对称小人 */
+.about-you-corner-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.about-you-player-fx {
+  position: absolute;
+  bottom: 0;
+  height: clamp(100px, 24%, 180px);
+  width: auto;
+  max-width: 34%;
+  object-fit: contain;
+  object-position: bottom left;
+  pointer-events: none;
+  user-select: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.about-you-player-fx--left {
+  left: 0;
+  transform: scaleX(-1);
+  transform-origin: center bottom;
+}
+
+.about-you-player-fx--right {
+  right: 0;
+  left: auto;
+  object-position: bottom right;
+  transform: none;
+}
+
+/* 小小的我：播放器左右下角 GIF */
+.tiny-me-corner-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.tiny-me-player-fx {
+  position: absolute;
+  bottom: 0;
+  width: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.tiny-me-player-fx--left {
+  left: 0;
+  height: clamp(96px, 22%, 168px);
+  max-width: 32%;
+  object-position: bottom left;
+}
+
+.tiny-me-player-fx--right {
+  right: 0;
+  left: auto;
+  height: clamp(72px, 16%, 128px);
+  max-width: 24%;
+  object-position: bottom right;
+}
+
+/* 覆写：左右下角立绘 + 卡片翻转 */
+.overwrite-corner-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: visible;
+  perspective: 900px;
+  perspective-origin: 50% 100%;
+}
+
+.overwrite-player-fx {
+  position: absolute;
+  bottom: 0;
+  width: auto;
+  height: clamp(72px, 18%, 140px);
+  max-width: 24%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  will-change: transform;
+}
+
+.overwrite-player-fx--left {
+  left: 0;
+  object-position: bottom left;
+  transform-origin: center bottom;
+  animation: overwrite-card-flip-in 2.2s linear infinite;
+}
+
+.overwrite-player-fx--right {
+  right: 0;
+  left: auto;
+  object-position: bottom right;
+  transform-origin: center bottom;
+  animation: overwrite-card-flip-out 2.2s linear infinite;
+}
+
+@keyframes overwrite-card-flip-in {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes overwrite-card-flip-out {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-360deg);
+  }
+}
+
+.special-song-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 1.2s cubic-bezier(0.65, 0, 0.35, 1),
+    visibility 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.special-song-bg.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.special-song-bg.is-hiding {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.fx-svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 奇境：全局轻微色散 */
+body.wonderland-chroma-active #app {
+  filter: url(#fxChroma);
+}
+
+/* 视奸：持续扭曲 + 色散（视频画面除外） */
+body.voyeur-distort-active .app-theme-backdrop,
+body.voyeur-distort-active .main > .panel:not(.panel-player),
+body.voyeur-distort-active .player-body > :not(.player-zone-video) {
+  filter: url(#fxVoyeurDistort) url(#fxChroma);
+}
+
+/* 霓虹：指定时段去色 + 轻微模糊（视频画面除外） */
+body.neon-desat-active.neon-desat-on .app-theme-backdrop,
+body.neon-desat-active.neon-desat-on .main > .panel:not(.panel-player),
+body.neon-desat-active.neon-desat-on .player-body > :not(.player-zone-video) {
+  filter: grayscale(var(--neon-gray, 0)) blur(var(--neon-blur, 0px));
+}
+
+/* 播放器面板外框 / 视频容器描边未包进 filter，单独去色 */
+body.neon-desat-active.neon-desat-on .panel-player {
+  border-color: color-mix(
+    in srgb,
+    var(--component-color) calc((1 - var(--neon-gray, 0)) * 100%),
+    #808080
+  );
+  box-shadow: var(--ui-shadow-x) var(--ui-shadow-y) 0
+    color-mix(
+      in srgb,
+      rgba(var(--component-color-rgb), 0.45) calc((1 - var(--neon-gray, 0)) * 100%),
+      rgba(80, 80, 80, 0.45)
+    );
+}
+
+body.neon-desat-active.neon-desat-on .player-zone-video {
+  box-shadow: var(--ui-shadow-x) var(--ui-shadow-y) 0
+    color-mix(
+      in srgb,
+      rgba(var(--component-color-rgb), 0.45) calc((1 - var(--neon-gray, 0)) * 100%),
+      rgba(80, 80, 80, 0.45)
+    );
 }
 
 .playlist-header.is-searching .toolbar-filter {
@@ -147,7 +547,7 @@ select {
 }
 
 .toolbar-filter:has(.toolbar-filter-panel:not([hidden])) {
-  z-index: 20;
+  z-index: 40;
 }
 
 .toolbar-filter-btn {
@@ -175,7 +575,7 @@ select {
   top: calc(100% + 6px);
   left: 50%;
   right: auto;
-  z-index: 30;
+  z-index: 50;
   width: max-content;
   min-width: 100%;
   max-width: none;
@@ -218,12 +618,14 @@ select {
 
 .toolbar-filter-option {
   display: block;
+  position: relative;
+  z-index: 1;
   width: 100%;
   margin: 0;
   padding: 9px 12px;
   border: none;
   border-bottom: 1px solid color-mix(in srgb, var(--component-color) 18%, transparent);
-  background: transparent;
+  background: var(--theme-color);
   color: var(--component-color);
   font-size: var(--font-size);
   font-family: inherit;
@@ -380,7 +782,7 @@ select {
 
 .playlist-header {
   position: relative;
-  z-index: 2;
+  z-index: 10;
   flex: 0 0 auto;
   height: var(--btn-height);
   display: grid;
@@ -501,9 +903,12 @@ select {
   border-radius: var(--cover-radius);
   background: transparent;
   overflow: hidden;
+  isolation: isolate;
 }
 
 .song-card-cover img {
+  position: relative;
+  z-index: 0;
   display: block;
   width: 100%;
   height: 100%;
@@ -523,6 +928,7 @@ select {
 .song-card-play-icon {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: none;
   align-items: center;
   justify-content: center;
@@ -546,7 +952,7 @@ select {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 3;
+  z-index: 8;
   width: var(--hero-badge-size);
   height: var(--hero-badge-size);
   pointer-events: none;
@@ -610,7 +1016,7 @@ select {
 }
 
 .info-cover-box .video-card-special-badge {
-  z-index: 4;
+  z-index: 8;
 }
 
 .song-card-play-icon svg {
@@ -660,6 +1066,7 @@ select {
   border-radius: var(--panel-radius);
   margin-bottom: var(--btn-gap);
   box-shadow: var(--ui-shadow);
+  cursor: pointer;
 }
 
 .player-video {
@@ -773,6 +1180,84 @@ select {
   transition: transform 0.16s ease;
 }
 
+/* 特殊进度条滑块（迪斯科之夜 / 不对称性 / 大失败！ / 真的真的完蛋了）——只换图，不改进度条占位尺寸 */
+body:is(
+  .disco-progress-active,
+  .asymmetry-progress-active,
+  .big-failure-progress-active,
+  .really-doomed-progress-active
+) .progress-wrap {
+  z-index: 280;
+  overflow: visible;
+}
+
+body:is(
+  .disco-progress-active,
+  .asymmetry-progress-active,
+  .big-failure-progress-active,
+  .really-doomed-progress-active
+) .progress-track {
+  overflow: visible;
+}
+
+body:is(
+  .disco-progress-active,
+  .asymmetry-progress-active,
+  .big-failure-progress-active,
+  .really-doomed-progress-active
+) .progress-thumb {
+  opacity: 0;
+  visibility: hidden;
+}
+
+body:is(
+  .disco-progress-active,
+  .asymmetry-progress-active,
+  .big-failure-progress-active,
+  .really-doomed-progress-active
+)
+  :is(
+    .disco-progress-thumb,
+    .asymmetry-progress-thumb,
+    .big-failure-progress-thumb,
+    .really-doomed-progress-thumb
+  ) {
+  position: absolute;
+  top: 50%;
+  left: calc(
+    var(--progress-thumb) / 2 +
+      (100% - var(--progress-thumb)) * var(--progress-pct) / 100
+  );
+  z-index: 30;
+  width: var(--progress-fx-thumb, 48px);
+  max-width: var(--progress-fx-thumb, 48px);
+  height: var(--progress-fx-thumb, 48px);
+  max-height: var(--progress-fx-thumb, 48px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  object-fit: contain;
+  filter: drop-shadow(
+      0 var(--ui-shadow-y) 0
+        color-mix(in srgb, var(--component-color) 45%, transparent)
+    )
+    drop-shadow(
+      0 var(--ui-shadow-y) 12px
+        color-mix(in srgb, var(--component-color) 22%, transparent)
+    );
+}
+
+body.disco-progress-active .disco-progress-thumb,
+body.big-failure-progress-active .big-failure-progress-thumb,
+body.really-doomed-progress-active .really-doomed-progress-thumb {
+  height: var(--progress-fx-thumb, 48px);
+  max-height: var(--progress-fx-thumb, 48px);
+}
+
+body.asymmetry-progress-active .asymmetry-progress-thumb {
+  height: auto;
+  max-height: calc(var(--progress-fx-thumb, 88px) * 0.72);
+}
+
 .progress-track:hover .progress-thumb,
 .progress-track:active .progress-thumb {
   transform: translate(-50%, -50%) scale(1.08);
@@ -815,14 +1300,194 @@ select {
   display: flex;
   align-items: stretch;
   justify-content: center;
-  width: 100%;
+  /* 抵消 player-body 左右内边距，频谱铺满面板内宽 */
+  width: calc(100% + 2 * var(--panel-pad-x));
+  margin-left: calc(-1 * var(--panel-pad-x));
+  margin-right: calc(-1 * var(--panel-pad-x));
   overflow: hidden;
 }
 
 .viz-canvas {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
+}
+
+body.viz-fire-active .player-zone-viz {
+  background: #2b0a0a;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+body.viz-fire-active .viz-canvas {
+  image-rendering: pixelated;
+}
+
+/* Nice Try：UNO 翻牌 */
+body.viz-uno-active .player-zone-viz {
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+}
+
+body.viz-uno-active .viz-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 次元通信：心电图 */
+body.viz-ecg-active .player-zone-viz {
+  overflow: visible;
+}
+
+/* 超主人公：音律下蹲小人 */
+body.viz-hero-active .player-zone-viz {
+  overflow: visible;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+body.viz-hero-active .viz-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-visualizer-row {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(1px, 0.25vw, 4px);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.hero-sprite {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.hero-sprite img {
+  display: block;
+  width: clamp(52px, 9vw, 88px);
+  height: auto;
+  object-fit: contain;
+  object-position: center bottom;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  transform: translateY(4px);
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.uno-visualizer-deck {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(6px, 0.9vw, 12px);
+  width: max-content;
+  max-width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  margin-top: -4px;
+  padding: 0 2px 2px;
+  box-sizing: border-box;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.uno-card {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(36px, 4.4vw, 54px);
+  height: clamp(52px, 6.4vw, 78px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  pointer-events: none;
+  perspective: 640px;
+  -webkit-perspective: 640px;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.uno-card::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  filter: blur(2px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.uno-card-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  transform: rotateY(0deg);
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0.15, 0.2, 1);
+}
+
+.uno-card.is-flipped .uno-card-inner {
+  transform: rotateY(180deg);
+}
+
+.uno-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.uno-card-face--back {
+  transform: rotateY(0deg) translateZ(1px);
+}
+
+.uno-card-face--front {
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+.uno-card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 
 .player-zone-controls {
@@ -890,7 +1555,6 @@ select {
 .volume-slider {
   writing-mode: vertical-lr;
   direction: rtl;
-  appearance: slider-vertical;
   width: 18px;
   height: 120px;
   margin: 0;
@@ -1088,11 +1752,11 @@ select {
   max-width: 100%;
   line-height: 1.35;
 }
-.info-lyrics-slot .info-lyrics-orig { font-size: 18px; }
+.info-lyrics-slot .info-lyrics-orig { font-size: 15px; }
 .info-lyrics-slot .info-lyrics-trans { font-size: 15px; opacity: 0.9; }
 .info-lyrics-current.is-active .info-lyrics-orig {
-  font-size: 22px;
-  transform: scale(1.08);
+  font-size: 18px;
+  transform: scale(1.05);
   transform-origin: center;
 }
 .info-lyrics-current.is-active .info-lyrics-trans {
@@ -1163,6 +1827,7 @@ select {
   justify-content: center;
   overflow: hidden;
   box-shadow: var(--ui-shadow);
+  isolation: isolate;
 }
 
 .info-cover-placeholder {
@@ -1174,6 +1839,7 @@ select {
 .info-cover-img {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1317,6 +1983,15 @@ html.is-info-editing.is-picking-color .player-video {
   white-space: nowrap;
 }
 
+.info-color-value {
+  color: var(--component-color);
+  font-size: var(--font-size);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  user-select: text;
+}
+
 .info-sq {
   box-sizing: border-box;
   width: 28px;
@@ -1361,3 +2036,4 @@ html.is-info-editing.is-picking-color .player-video {
 .panel-side.is-editing .info-chips {
   display: none;
 }
+

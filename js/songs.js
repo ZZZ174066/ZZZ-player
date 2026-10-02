@@ -1,69 +1,166 @@
 /**
- * 曲目特效注册表 — 新增歌曲只需在此追加一条配置
+ * 曲目特效注册表 — 新增歌曲主要改这里
  *
- * panel: 面板 canvas/DOM 特效 id
- * viz: 频谱可视化模式 ecg | uno | hero
- * progress: 自定义进度条滑块 { bodyClass, wrapClass, thumbClass, src, thumbPx }
- * bg: 背景图候选路径（panel 特效用 BgEffect 时也可写在 panel 模块）
- * splitColor: 是否启用左右分色
- * badge: 是否显示封面折角星标（默认 true）
+ * —— 字段 ——
+ * keywords / lower: 曲名匹配
+ * bg: 背景图路径数组（BgSync）
+ * progress: 自定义进度滑块 { bodyClass, wrapClass, thumbClass, src, thumbPx }
+ * filter / filterMute / filterWindows: 全局滤镜（chroma / neonDesat / bwDesat / voyeur）
+ * viz: 频谱模式 fire | ecg | uno | hero | blocks
+ * overlay: 背景叠加层 id（由对应 *-fx 注册到 EffectHub）
+ *   arrows | clapMarch | fruitMarch | chaosBoogie | aboutYou | tinyMe | overwrite | exorcismText | idealFloat | poisonShow
+ * badge: 是否显示星标（默认 true）
+ *
+ * —— 扩展 overlay ——
+ * 1. 在本表加 overlay / keywords
+ * 2. 新建 js/effects/xxx-fx.js，末尾 EffectHub.registerOverlay({...})
+ * 3. 在 index.html 引入脚本（底部行进类优先用 BottomMarch.create）
+ * 不必再改 main.js
  */
 (function () {
   const FX = "./特效/";
-  const splitOnly = (keywords, lower) => ({ splitColor: true, keywords, ...(lower && { lower: true }) });
 
   const SONGS = [
+    // —— 全局滤镜 ——
     {
-      id: "chaosBoogie",
-      panel: "chaosBoogie",
-      keywords: ["混沌ブギ", "混沌布吉"],
+      id: "wonderland",
+      filter: "chroma",
+      filterMute: [{ start: 125, end: 150 }],
+      keywords: ["奇境"],
+    },
+    {
+      id: "neon",
+      filter: "neonDesat",
+      filterWindows: [
+        { start: 0, end: 11 },
+        { start: 22, end: 34 },
+        { start: 55, end: 66 },
+        { start: 76, end: 87 },
+      ],
+      keywords: ["霓虹"],
       lower: true,
     },
+    {
+      id: "instantLoop",
+      filter: "bwDesat",
+      filterWindows: [
+        { start: 0, end: 0.7 },
+        { start: 12.4, end: 52 },
+        { start: 63.8, end: 97.5 },
+        { start: 109.2, end: 120.3 },
+      ],
+      keywords: ["即刻轮回"],
+    },
+    {
+      id: "voyeur",
+      filter: "voyeur",
+      keywords: ["视奸"],
+    },
+    // —— 背景叠加 overlay（EffectHub）——
+    {
+      id: "poisonShow",
+      overlay: "poisonShow",
+      keywords: ["展示中毒"],
+    },
+    {
+      id: "chaosBoogie",
+      overlay: "chaosBoogie",
+      keywords: ["混沌布吉"],
+      lower: true,
+    },
+    {
+      id: "aboutYou",
+      overlay: "aboutYou",
+      keywords: ["说的就是你啊！"],
+    },
+    {
+      id: "tinyMe",
+      overlay: "tinyMe",
+      keywords: ["小小的我"],
+    },
+    {
+      id: "overwrite",
+      overlay: "overwrite",
+      keywords: ["覆写"],
+    },
+    {
+      id: "relationGirl",
+      overlay: "arrows",
+      keywords: ["关系少女"],
+      lower: true,
+    },
+    {
+      id: "exorcism",
+      overlay: "exorcismText",
+      keywords: ["驱魔"],
+      lower: true,
+    },
+    {
+      id: "idealImage",
+      overlay: "idealFloat",
+      keywords: ["理想・形象"],
+      lower: true,
+    },
+    // —— 背景替换 bg ——
     {
       id: "moonBeautiful",
       panel: "moonBeautiful",
       bg: [
-        `${FX}月が綺麗ねと言われたい！（对我说月色真美啊！）/月が綺麗ねと言われたい！（对我说月色真美啊！）.png`,
+        `${FX}想听你说月色真美！/想听你说月色真美！.png`,
       ],
-      keywords: ["月が綺麗ねと言われたい","对我说月色真美",],
+      keywords: ["想听你说月色真美！"],
     },
     {
       id: "telepathy",
       panel: "telepathy",
-      bg: [`${FX}テレパシ（心灵感应）/テレパシ（心灵感应）.png`],
-      keywords: ["テレパシ", "心灵感应"],
+      bg: [`${FX}心灵感应/心灵感应.png`],
+      keywords: ["心灵感应"],
       lower: true,
     },
     {
       id: "bakaMitai",
       panel: "bakaMitai",
-      bg: [`${FX}バカみたいに（像笨蛋一样）/バカみたいに（像笨蛋一样）.png`],
-      keywords: ["バカみたいに", "像笨蛋一样"],
+      bg: [`${FX}像笨蛋一样/像笨蛋一样.png`],
+      keywords: ["像笨蛋一样"],
+      lower: true,
+    },
+    {
+      id: "burnout",
+      bg: [`${FX}燃尽/燃尽.jpg`],
+      keywords: ["燃尽"],
       lower: true,
     },
     {
       id: "cheohyung",
       panel: "cheohyung",
-      bg: [`${FX}처형박수（处刑拍手）/처형박수（处刑拍手）.gif`],
-      keywords: ["처형박수", "处刑拍手"],
+      overlay: "clapMarch",
+      bg: [`${FX}处刑拍手/处刑拍手.gif`],
+      keywords: ["处刑拍手"],
     },
     {
       id: "characterT",
       panel: "characterT",
-      keywords: ["Character T", "角色T"],
+      overlay: "fruitMarch",
+      keywords: ["角色T"],
+      lower: true,
+    },
+    // —— 频谱 viz ——
+    {
+      id: "fomo",
+      viz: "fire",
+      keywords: ["错失恐惧症"],
       lower: true,
     },
     {
       id: "signaling",
       viz: "ecg",
-      keywords: ["Signaling", "次元通信"],
+      keywords: ["次元通信"],
       lower: true,
-      splitColor: true,
     },
     {
       id: "niceTry",
       viz: "uno",
-      keywords: ["みむかｩわナイストライ","Nice Try"],
+      keywords: ["Nice Try"],
       lower: true,
     },
     {
@@ -73,15 +170,27 @@
       lower: true,
     },
     {
+      id: "loveParaDance",
+      viz: "blocks",
+      keywords: ["恋爱帕拉舞"],
+      lower: true,
+    },
+    {
+      id: "fakeDance",
+      viz: "blocks",
+      keywords: ["虚假舞蹈"],
+    },
+    // —— 进度条滑块 ——
+    {
       id: "discoNight",
       progress: {
         bodyClass: "disco-progress-active",
         wrapClass: "is-disco-progress",
         thumbClass: "disco-progress-thumb",
-        src: `${FX}ディスコティックナイト（迪斯科之夜）/ディスコティックナイト（迪斯科之夜）.png`,
-        thumbPx: 52,
+        src: `${FX}迪斯科之夜/迪斯科之夜.png`,
+        thumbPx: 48,
       },
-      keywords: ["ディスコティックナイト", "迪斯科之夜"],
+      keywords: ["迪斯科之夜"],
     },
     {
       id: "asymmetry",
@@ -89,35 +198,40 @@
         bodyClass: "asymmetry-progress-active",
         wrapClass: "is-asymmetry-progress",
         thumbClass: "asymmetry-progress-thumb",
-        src: `${FX}アシンメトリー（不对称性）/アシンメトリー（不对称性）.png`,
+        src: `${FX}不对称性/不对称性.png`,
         thumbPx: 88,
       },
-      keywords: ["アシンメトリー", "不对称性"],
+      keywords: ["不对称性"],
       lower: true,
     },
-    // 仅分色、无其它特效
-    splitOnly(["メズマライザー", "催眠术"], true),
-    splitOnly(["ダイダイダイダイダイキライ", "超级超级超级超级超级讨厌"]),
-    splitOnly(["ダダダダダル", "烦烦烦烦烦死了"]),
-    splitOnly(["Sell a Friend", "出卖朋友"], true),
-    splitOnly(["T氏の話を信じるな", "不要相信T氏的话"]),
-    splitOnly(["멜트 아이스크림", "融化的冰淇淋"]),
-    splitOnly(["うるたーる", "ウルタール", "乌撒的猫"]),
-    splitOnly(["キャンディークッキーチョコレート", "糖果饼干巧克力"]),
-    splitOnly(["スプリットダンス", "劈叉舞"]),
-    splitOnly(["フェイクダンス", "虚假舞蹈"]),
-    splitOnly(["どりーむもーど", "梦之模式"]),
-    splitOnly(["天天天国地獄国", "天天天国地狱国"]),
-    splitOnly(["踊っチャイナ", "舞动吧中国"]),
-    splitOnly(["Clone Clone", "克隆克隆"], true),
-    splitOnly(["PPPP"]),
-    splitOnly(["ねぇねぇねぇ", "呐呐呐"]),
-    splitOnly(["ぴょん", "一蹦一跳"]),
+    {
+      id: "bigFailure",
+      progress: {
+        bodyClass: "big-failure-progress-active",
+        wrapClass: "is-big-failure-progress",
+        thumbClass: "big-failure-progress-thumb",
+        src: `${FX}大失败！/大失败！.png`,
+        thumbPx: 64,
+      },
+      keywords: ["大失败"],
+      lower: true,
+    },
+    {
+      id: "reallyDoomed",
+      progress: {
+        bodyClass: "really-doomed-progress-active",
+        wrapClass: "is-really-doomed-progress",
+        thumbClass: "really-doomed-progress-thumb",
+        src: `${FX}真的真的完蛋了/真的真的完蛋了.png`,
+        thumbPx: 56,
+      },
+      keywords: ["真的真的完蛋了"],
+      lower: true,
+    },
   ];
 
-  const VIZ_PRIORITY = ["ecg", "uno", "hero"];
+  const VIZ_PRIORITY = ["fire", "ecg", "uno", "hero", "blocks"];
   const PANEL_PRIORITY = [
-    "chaosBoogie",
     "moonBeautiful",
     "telepathy",
     "bakaMitai",
@@ -133,26 +247,11 @@
     return SONGS.find((s) => pred(s) && matchSong(v, s)) || null;
   }
 
-  function getSplitColorKeywords() {
-    return SONGS.filter((s) => s.splitColor || s.progress).flatMap((s) => s.keywords);
-  }
-
-  function isSplitColorVideo(v) {
-    if (!v) return false;
-    const text = AppUtils.getVideoSearchText(v);
-    const lower = text.toLowerCase();
-    return getSplitColorKeywords().some(
-      (kw) => text.includes(kw) || lower.includes(kw.toLowerCase()),
-    );
-  }
-
   window.SongRegistry = {
     SONGS,
     FX,
     matchSong,
     findSong,
-    getSplitColorKeywords,
-    isSplitColorVideo,
     resolvePanelEffect(v) {
       for (const id of PANEL_PRIORITY) {
         const s = findSong(v, (x) => x.panel === id);
@@ -172,12 +271,7 @@
     },
     hasSpecialBadge(v) {
       if (!v) return false;
-      if (v.coverIsGif) return true;
-      const name = String(v.coverFileName || v.coverUrl || "").toLowerCase();
-      if (name.includes(".gif")) return true;
-      if (SONGS.some((s) => s.badge !== false && matchSong(v, s))) return true;
-      if (window.SplitColor?.isSplitColorSwapVideo?.(v)) return true;
-      return false;
+      return SONGS.some((s) => s.badge !== false && matchSong(v, s));
     },
     getBgCandidates(panelId) {
       return SONGS.find((s) => s.panel === panelId)?.bg || [];

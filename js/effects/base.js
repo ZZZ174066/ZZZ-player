@@ -1,5 +1,5 @@
 /**
- * 特效基类：背景图、进度条滑块、横向滚动层
+ * 特效基类：背景图、进度条滑块
  */
 (function () {
   const { preloadImages, loadImageWithCandidates, createImg } = AppUtils;
@@ -144,24 +144,52 @@
       return document.getElementById("progressWrap") || document.getElementById("playerProgressWrap");
     }
 
+    getTrack() {
+      return document.getElementById("progressTrack") || document.getElementById("playerProgressTrack");
+    }
+
     getThumbEl() {
       return document.querySelector(`.${this.thumbClass}`);
     }
 
     ensureThumb() {
-      const wrap = this.getWrap();
-      if (!wrap || this.getThumbEl()) return;
-      wrap.appendChild(createImg(this.src, this.thumbClass));
+      const host = this.getTrack() || this.getWrap();
+      if (!host || this.getThumbEl()) return;
+      host.appendChild(createImg(this.src, this.thumbClass));
     }
 
     removeThumb() {
       this.getThumbEl()?.remove();
     }
 
+    clearThumbVar() {
+      const wrap = this.getWrap();
+      const track = this.getTrack();
+      wrap?.style.removeProperty("--progress-fx-thumb");
+      track?.style.removeProperty("--progress-fx-thumb");
+    }
+
     syncLayout() {
       const wrap = this.getWrap();
+      const track = this.getTrack();
       if (!wrap?.classList.contains(this.wrapClass)) return;
-      wrap.style.setProperty("--player-progress-thumb", `${this.thumbPx}px`);
+      const px = `${this.thumbPx}px`;
+      // 仅放大特效图，不改 --progress-thumb，避免进度条布局跳动
+      wrap.style.setProperty("--progress-fx-thumb", px);
+      track?.style.setProperty("--progress-fx-thumb", px);
+      const el = this.getThumbEl();
+      if (el) {
+        el.style.width = px;
+        el.style.maxWidth = px;
+        // 迪斯科为正方形；不对称性保持等比，高度由 CSS max-height 限制
+        if (this.thumbClass === "asymmetry-progress-thumb") {
+          el.style.height = "auto";
+          el.style.maxHeight = `calc(${px} * 0.72)`;
+        } else {
+          el.style.height = px;
+          el.style.maxHeight = px;
+        }
+      }
     }
 
     setActive(on) {
@@ -170,99 +198,13 @@
       document.body.classList.toggle(this.bodyClass, on);
       wrap?.classList.toggle(this.wrapClass, on);
       if (on) {
-        this.syncLayout();
         this.ensureThumb();
+        this.syncLayout();
         window.addEventListener("resize", this.onResize);
       } else {
         this.removeThumb();
+        this.clearThumbVar();
         window.removeEventListener("resize", this.onResize);
-      }
-    }
-  }
-
-  class HorizontalScrollLayer {
-    constructor({
-      layerId,
-      layerClass,
-      itemClass,
-      scrollPxS,
-      zBase,
-      spawnIntervalS,
-      getSpawnIntervalSec,
-      pickSrc,
-      onItemTick,
-    }) {
-      this.layerId = layerId;
-      this.layerClass = layerClass;
-      this.itemClass = itemClass;
-      this.scrollPxS = scrollPxS;
-      this.zBase = zBase;
-      this.spawnIntervalS = spawnIntervalS;
-      this.getSpawnIntervalSec = getSpawnIntervalSec;
-      this.pickSrc = pickSrc;
-      this.onItemTick = onItemTick;
-      this.layerEl = null;
-      this.items = [];
-      this.spawnAccum = 0;
-      this.spawnCounter = 0;
-    }
-
-    ensureLayer() {
-      const backdrop = document.getElementById("appThemeBackdrop");
-      if (!backdrop || this.layerEl) return;
-      const layer = document.createElement("div");
-      layer.id = this.layerId;
-      layer.className = this.layerClass;
-      layer.setAttribute("aria-hidden", "true");
-      backdrop.appendChild(layer);
-      this.layerEl = layer;
-    }
-
-    destroyLayer() {
-      this.items.forEach((item) => item.el.remove());
-      this.items = [];
-      this.spawnAccum = 0;
-      this.spawnCounter = 0;
-      this.layerEl?.remove();
-      this.layerEl = null;
-    }
-
-    spawnItem() {
-      const layer = this.layerEl;
-      if (!layer) return;
-      const img = createImg(this.pickSrc(), this.itemClass);
-      const order = ++this.spawnCounter;
-      img.style.zIndex = String(this.zBase - order);
-      img.style.left = `${layer.clientWidth}px`;
-      layer.appendChild(img);
-      this.items.push({ el: img, x: layer.clientWidth, order, swayPhase: Math.random() * Math.PI * 2 });
-    }
-
-    tick(dt, hooks) {
-      const layer = this.layerEl;
-      const video = hooks?.getVideo?.();
-      if (!layer || !video || video.paused || video.ended) return;
-
-      const interval = this.getSpawnIntervalSec?.() ?? this.spawnIntervalS;
-      this.spawnAccum += dt;
-      while (this.spawnAccum >= interval) {
-        this.spawnAccum -= interval;
-        this.spawnItem();
-      }
-
-      const remove = [];
-      for (let i = 0; i < this.items.length; i++) {
-        const item = this.items[i];
-        item.x -= this.scrollPxS * dt;
-        item.el.style.left = `${item.x}px`;
-        this.onItemTick?.(item, dt);
-        const w = item.el.offsetWidth || 0;
-        if (w > 0 && item.x + w < 0) remove.push(i);
-      }
-      for (let j = remove.length - 1; j >= 0; j--) {
-        const idx = remove[j];
-        this.items[idx].el.remove();
-        this.items.splice(idx, 1);
       }
     }
   }
@@ -273,6 +215,5 @@
     SPECIAL_SONG_BG_IMG_CLASS,
     BgEffect,
     ProgressThumbEffect,
-    HorizontalScrollLayer,
   };
 })();

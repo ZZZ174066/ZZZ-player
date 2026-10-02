@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>本地视频播放器</title>
-    <link rel="stylesheet" href="./style.css?v=107" />
+    <link rel="stylesheet" href="./style.css?v=168" />
   </head>
   <body>
     <div id="app" class="app">
+      <div id="appThemeBackdrop" class="app-theme-backdrop" aria-hidden="true"></div>
       <main class="main" id="appMain">
         <section class="panel panel-player" aria-label="歌曲播放">
           <div class="player-body">
@@ -50,7 +51,6 @@
                       min="0"
                       max="100"
                       value="100"
-                      orient="vertical"
                       aria-label="音量"
                     />
                   </div>
@@ -67,9 +67,23 @@
                 <button type="button" class="btn btn-icon" id="btnNext" title="下一曲" aria-label="下一曲">
                   <svg viewBox="0 0 1098 1024" aria-hidden="true"><path fill="currentColor" d="M183.65 850.571l0-735.951c0-6.814 0-10.221 3.406-17.035 0-3.405 0-6.814 3.406-6.814 10.22-17.035 23.849-27.258 40.887-27.258l3.405 0c3.405 0 6.814 0 13.629 3.406 3.405 0 6.814 3.406 10.22 3.406l538.335 344.125 0-275.982c0-40.886 30.663-78.366 68.143-78.367s68.143 34.073 68.143 78.367l0 691.658c0 40.886-30.663 78.366-68.143 78.367s-68.143-34.073-68.143-78.367l0-275.982-538.335 347.533c-3.405 0-6.814 3.406-10.22 3.406s-6.814 3.406-13.629 3.406l-3.405 0c-17.036 0-34.073-10.22-40.887-27.258 0-3.405 0-3.405-3.406-6.814l0-3.405c-3.406-6.814-3.406-10.22-3.406-17.035 3.406-3.406 0-3.405 0-3.405zM285.867 213.423l0 541.743 419.085-269.168-419.085-272.575z"/></svg>
                 </button>
-                <button type="button" class="btn btn-icon" id="btnSpeed" title="加速" aria-label="加速">
-                  <svg viewBox="0 0 1260 1024" aria-hidden="true"><path fill="currentColor" d="M77.738464 1011.260664l536.872038-462.255925a50.350711 50.350711 0 0 0 0-72.796208L77.738464 12.739336A46.104265 46.104265 0 0 0 0.089175 48.530806v926.331753a46.104265 46.104265 0 0 0 77.649289 36.398105z m629.687204 0l536.872038-462.255925a49.744076 49.744076 0 0 0 0-72.796208L707.425668 12.739336a46.104265 46.104265 0 0 0-77.649289 36.398105v925.725118a46.104265 46.104265 0 0 0 77.649289 36.398105z"/></svg>
-                </button>
+                <div class="volume-control" id="speedControl">
+                  <div class="volume-popover" id="speedPopover" hidden role="group" aria-label="倍速调节">
+                    <input
+                      type="range"
+                      class="volume-slider"
+                      id="speedSlider"
+                      min="1"
+                      max="2"
+                      step="0.25"
+                      value="1"
+                      aria-label="播放倍速"
+                    />
+                  </div>
+                  <button type="button" class="btn btn-icon" id="btnSpeed" title="加速" aria-label="加速" aria-expanded="false" aria-controls="speedPopover">
+                    <svg viewBox="0 0 1260 1024" aria-hidden="true"><path fill="currentColor" d="M77.738464 1011.260664l536.872038-462.255925a50.350711 50.350711 0 0 0 0-72.796208L77.738464 12.739336A46.104265 46.104265 0 0 0 0.089175 48.530806v926.331753a46.104265 46.104265 0 0 0 77.649289 36.398105z m629.687204 0l536.872038-462.255925a49.744076 49.744076 0 0 0 0-72.796208L707.425668 12.739336a46.104265 46.104265 0 0 0-77.649289 36.398105v925.725118a46.104265 46.104265 0 0 0 77.649289 36.398105z"/></svg>
+                  </button>
+                </div>
                 <button type="button" class="btn btn-icon" id="btnPip" title="小窗" aria-label="小窗">
                   <svg viewBox="0 0 1024 1024" aria-hidden="true"><path fill="currentColor" d="M896 128a42.666667 42.666667 0 0 1 42.666667 42.666667v298.666666h-85.333334V213.333333H170.666667v597.333334h256v85.333333H128a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667h768z m0 426.666667a42.666667 42.666667 0 0 1 42.666667 42.666666v256a42.666667 42.666667 0 0 1-42.666667 42.666667h-341.333333a42.666667 42.666667 0 0 1-42.666667-42.666667v-256a42.666667 42.666667 0 0 1 42.666667-42.666666h341.333333zM286.165333 268.501333l96 96L469.333333 277.333333V512H234.666667l87.168-87.168-96-96 60.330666-60.330667z"/></svg>
                 </button>
@@ -151,6 +165,7 @@
                           title="背景色"
                           aria-label="背景色"
                         ></button>
+                        <span class="info-color-value" id="infoThemeValue" aria-hidden="true"></span>
                       </div>
                       <div class="info-color-item">
                         <span class="info-color-caption">组件：</span>
@@ -161,6 +176,7 @@
                           title="组件色"
                           aria-label="组件色"
                         ></button>
+                        <span class="info-color-value" id="infoComponentValue" aria-hidden="true"></span>
                       </div>
                     </div>
                   </div>
@@ -250,6 +266,93 @@
 
     <canvas id="infoCoverPickCanvas" hidden aria-hidden="true"></canvas>
 
-    <script src="./main.js?v=98"></script>
+    <svg class="fx-svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <filter
+          id="fxChroma"
+          color-interpolation-filters="sRGB"
+          x="-10%"
+          y="-10%"
+          width="120%"
+          height="120%"
+        >
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="redOnly"
+          />
+          <feOffset id="fxChromaRed" in="redOnly" dx="0" dy="0" result="redShift" />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+            result="greenOnly"
+          />
+          <feColorMatrix
+            in="SourceGraphic"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+            result="blueOnly"
+          />
+          <feOffset id="fxChromaBlue" in="blueOnly" dx="0" dy="0" result="blueShift" />
+          <feBlend in="redShift" in2="greenOnly" mode="screen" result="rg" />
+          <feBlend in="rg" in2="blueShift" mode="screen" />
+        </filter>
+        <!-- 视奸：持续噪声置换扭曲 -->
+        <filter
+          id="fxVoyeurDistort"
+          color-interpolation-filters="sRGB"
+          x="-8%"
+          y="-8%"
+          width="116%"
+          height="116%"
+        >
+          <feTurbulence
+            id="fxVoyeurNoise"
+            type="fractalNoise"
+            baseFrequency="0.014 0.018"
+            numOctaves="2"
+            seed="7"
+            result="noise"
+          />
+          <feDisplacementMap
+            id="fxVoyeurDisp"
+            in="SourceGraphic"
+            in2="noise"
+            scale="8"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </defs>
+    </svg>
+
+    <script src="./js/utils.js?v=1"></script>
+    <script src="./js/songs.js?v=37"></script>
+    <!-- 特效：核心 → sync → 频谱 → 叠加 → 主逻辑 -->
+    <script src="./js/effects/base.js?v=5"></script>
+    <script src="./js/effects/hub.js?v=7"></script>
+    <script src="./js/effects/bottom-march.js?v=1"></script>
+    <script src="./js/effects/bg-sync.js?v=1"></script>
+    <script src="./js/effects/progress-sync.js?v=1"></script>
+    <script src="./js/effects/filter-sync.js?v=13"></script>
+    <script src="./js/effects/viz-sample.js?v=5"></script>
+    <script src="./js/effects/fire-viz.js?v=6"></script>
+    <script src="./js/effects/blocks-viz.js?v=5"></script>
+    <script src="./js/effects/uno-viz.js?v=1"></script>
+    <script src="./js/effects/ecg-viz.js?v=2"></script>
+    <script src="./js/effects/hero-viz.js?v=1"></script>
+    <script src="./js/effects/arrow-fx.js?v=5"></script>
+    <script src="./js/effects/clap-fx.js?v=5"></script>
+    <script src="./js/effects/fruit-fx.js?v=5"></script>
+    <script src="./js/effects/chaos-fx.js?v=2"></script>
+    <script src="./js/effects/about-you-fx.js?v=1"></script>
+    <script src="./js/effects/tiny-me-fx.js?v=1"></script>
+    <script src="./js/effects/overwrite-fx.js?v=1"></script>
+    <script src="./js/effects/exorcism-fx.js?v=4"></script>
+    <script src="./js/effects/ideal-fx.js?v=7"></script>
+    <script src="./js/effects/poison-fx.js?v=7"></script>
+    <script src="./main.js?v=126"></script>
   </body>
 </html>

@@ -1,5 +1,7 @@
 /**
- * 本地视频播放器 */
+ * 本地视频播放器主逻辑
+ * 特效同步请走 EffectHub（js/effects/hub.js），曲目配置见 js/songs.js
+ */
 
 const MEDIA_EXTS = [".mp4", ".mp3", ".flac"];
 const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif"];
@@ -45,6 +47,7 @@ const state = {
   searchQuery: "",
   infoPanelMode: "info",
   playbackRate: 1,
+  speedOpen: false,
   playMode: "shuffle",
   shuffleOrder: [],
   shuffleFingerprint: "",
@@ -99,6 +102,8 @@ const dom = {
   infoLevel: $("infoLevel"),
   infoThemePreview: $("infoThemePreview"),
   infoComponentPreview: $("infoComponentPreview"),
+  infoThemeValue: $("infoThemeValue"),
+  infoComponentValue: $("infoComponentValue"),
   infoCoverPickCanvas: $("infoCoverPickCanvas"),
   playerZoneVideo: document.querySelector(".player-zone-video"),
   videoEl: $("videoElement"),
@@ -120,6 +125,9 @@ const dom = {
   volumeControl: $("volumeControl"),
   volumePopover: $("volumePopover"),
   volumeSlider: $("volumeSlider"),
+  speedControl: $("speedControl"),
+  speedPopover: $("speedPopover"),
+  speedSlider: $("speedSlider"),
   playlistControls: $("playlistControls"),
   btnListTop: $("btnListTop"),
   btnLocate: $("btnLocate"),
@@ -159,6 +167,14 @@ function seekByClientX(clientX) {
   const v = dom.videoEl;
   if (!v || !Number.isFinite(v.duration) || v.duration <= 0) return;
   v.currentTime = progressRatioFromClientX(clientX) * v.duration;
+  syncProgressFromVideo();
+}
+
+function seekByDelta(deltaSec) {
+  const v = dom.videoEl;
+  if (!v || !Number.isFinite(v.duration) || v.duration <= 0) return;
+  const next = Math.min(v.duration, Math.max(0, (v.currentTime || 0) + deltaSec));
+  v.currentTime = next;
   syncProgressFromVideo();
 }
 
@@ -240,11 +256,19 @@ function syncInfoPanelModeUi() {
   dom.infoTabLyricsBtn?.classList.toggle("is-active", !isInfo);
 }
 
+function syncSongEffects() {
+  const song = getCurrentSong();
+  EffectHub?.syncAll?.(song, { analyser });
+}
+
+function getVisualizerMode() {
+  const song = getCurrentSong();
+  return window.SongRegistry?.resolveVisualizerMode?.(song) || "bars";
+}
+
 function songHasSpecialBadge(song) {
-  if (!song) return false;
-  if (song.coverIsGif) return true;
-  const name = String(song.coverFileName || "").toLowerCase();
-  return name.endsWith(".gif");
+  if (window.EffectHub?.hasSpecialBadge) return EffectHub.hasSpecialBadge(song);
+  return false;
 }
 
 function specialBadgeHtml(variant = "card") {
@@ -330,6 +354,7 @@ function playSongAt(index) {
   }
   renderInfoView();
   ensureLyricsLoaded();
+  syncSongEffects();
 }
 
 function onSongCardClick(index) {
@@ -387,6 +412,8 @@ function parseBilingualLrc(text) {
     return (Number(min) || 0) * 60 + (Number(sec) || 0) + sub;
   };
   const keyOf = (t) => (Math.round(t * 1000) / 1000).toFixed(3);
+  const joinLines = (arr) =>
+    (arr || []).map((s) => String(s || "").trim()).filter(Boolean).join("\n");
   const entries = [];
   for (const raw of String(text || "").replace(/^\uFEFF/, "").split(/\r?\n/)) {
     const line = raw.trim();
@@ -396,6 +423,7 @@ function parseBilingualLrc(text) {
   }
   if (!entries.length) return [];
 
+  // 双语 LRC：时间轴回绕处拆成原文 / 译文两段
   let splitAt = -1;
   for (let i = 1; i < entries.length; i++) {
     if (entries[i].time + 0.001 < entries[i - 1].time) {
@@ -410,27 +438,39 @@ function parseBilingualLrc(text) {
     map.get(k).push(e.text);
   };
 
+  /** 同一时间戳的多行合并为同一句 */
+  const lineFromTexts = (time, texts) => {
+    const list = (texts || []).map((s) => String(s || "").trim()).filter(Boolean);
+    if (!list.length) return null;
+    if (list.length === 1) return { time, orig: list[0], trans: "" };
+    if (list.length === 2) return { time, orig: list[0], trans: list[1] };
+    return { time, orig: list.join("\n"), trans: "" };
+  };
+
   if (splitAt < 0) {
     const queues = new Map();
     entries.forEach((e) => push(queues, e));
     const out = [];
     queues.forEach((texts, key) => {
-      const time = Number(key);
-      for (let i = 0; i < texts.length; i += 2) {
-        if (texts[i] || texts[i + 1]) out.push({ time, orig: texts[i] || "", trans: texts[i + 1] || "" });
-      }
+      const line = lineFromTexts(Number(key), texts);
+      if (line) out.push(line);
     });
     return out.sort((a, b) => a.time - b.time);
   }
 
-  const trans = new Map();
-  entries.slice(splitAt).forEach((e) => push(trans, e));
-  return entries
-    .slice(0, splitAt)
-    .map((o) => {
-      const q = trans.get(keyOf(o.time));
-      return { time: o.time, orig: o.text, trans: q?.length ? q.shift() : "" };
-    })
+  const origMap = new Map();
+  const transMap = new Map();
+  entries.slice(0, splitAt).forEach((e) => push(origMap, e));
+  entries.slice(splitAt).forEach((e) => push(transMap, e));
+
+  const keys = new Set([...origMap.keys(), ...transMap.keys()]);
+  return [...keys]
+    .sort((a, b) => Number(a) - Number(b))
+    .map((key) => ({
+      time: Number(key),
+      orig: joinLines(origMap.get(key)),
+      trans: joinLines(transMap.get(key)),
+    }))
     .filter((x) => x.orig || x.trans);
 }
 
@@ -459,8 +499,9 @@ function fillLyricSlot(el, line) {
     el.innerHTML = "";
     return;
   }
-  el.innerHTML = `<div class="info-lyrics-orig">${escapeHtml(line.orig || "")}</div>${
-    line.trans ? `<div class="info-lyrics-trans">${escapeHtml(line.trans)}</div>` : ""
+  const htmlLine = (s) => escapeHtml(s).replace(/\n/g, "<br>");
+  el.innerHTML = `<div class="info-lyrics-orig">${htmlLine(line.orig || "")}</div>${
+    line.trans ? `<div class="info-lyrics-trans">${htmlLine(line.trans)}</div>` : ""
   }`;
 }
 
@@ -538,16 +579,20 @@ function normalizeHexColor(val) {
 }
 
 function updateColorPreviews(bgHex, fgHex) {
-  const bg = bgHex || state.themeColor;
-  const fg = fgHex || state.componentColor;
+  const bg = normalizeHexColor(bgHex) || normalizeHexColor(state.themeColor) || String(bgHex || state.themeColor || "");
+  const fg = normalizeHexColor(fgHex) || normalizeHexColor(state.componentColor) || String(fgHex || state.componentColor || "");
   if (dom.infoThemePreview) {
     dom.infoThemePreview.style.background = bg;
     dom.infoThemePreview.title = `背景色 ${bg}`;
+    dom.infoThemePreview.setAttribute("aria-label", `背景色 ${bg}`);
   }
+  if (dom.infoThemeValue) dom.infoThemeValue.textContent = bg;
   if (dom.infoComponentPreview) {
     dom.infoComponentPreview.style.background = fg;
     dom.infoComponentPreview.title = `组件色 ${fg}`;
+    dom.infoComponentPreview.setAttribute("aria-label", `组件色 ${fg}`);
   }
+  if (dom.infoComponentValue) dom.infoComponentValue.textContent = fg;
 }
 
 function hexToRgbChannels(hex, fallback = { r: 0, g: 0, b: 0 }) {
@@ -868,6 +913,14 @@ function bindColorPickEvents() {
   };
   on(dom.playerZoneVideo, "click", onVideoPick, true);
   on(dom.videoEl, "click", onVideoPick, true);
+}
+
+function isTypingTarget(el) {
+  if (!el || !(el instanceof Element)) return false;
+  const tag = el.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  if (el.isContentEditable) return true;
+  return !!el.closest?.("input, textarea, select, [contenteditable='true']");
 }
 
 function renderInfoView() {
@@ -1355,6 +1408,7 @@ function refreshUiAfterSongListChange(keepPlaying) {
   }
   renderInfoView();
   ensureLyricsLoaded();
+  syncSongEffects();
 }
 
 async function openImportFolderPicker() {
@@ -1378,9 +1432,19 @@ async function restoreLibraryOnStart() {
 let audioContext = null;
 let analyser = null;
 let analyserDataArray = null;
+let analyserTimeArray = null;
 let visualizerRaf = 0;
 
 function parseComponentRgb() {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--component-color-rgb")
+    .trim();
+  if (raw) {
+    const parts = raw.split(",").map((s) => Number(String(s).trim()));
+    if (parts.length >= 3 && parts.every((n) => Number.isFinite(n))) {
+      return { r: parts[0], g: parts[1], b: parts[2] };
+    }
+  }
   return hexToRgbChannels(state.componentColor);
 }
 
@@ -1392,17 +1456,32 @@ function drawBarsVisualizer(ctx, canvas, freqData) {
   const ox = parseFloat(cs.getPropertyValue("--ui-shadow-x")) || 5;
   const oy = parseFloat(cs.getPropertyValue("--ui-shadow-y")) || 5;
   const barCount = 36;
-  const barMax = h * 0.85;
+  /** 去掉中心两侧各 4 根（共 8 根），其余铺满宽度 */
+  const SKIP = 4;
+  const drawCount = barCount - SKIP;
+  const barMax = h * 0.88;
   const midX = w / 2;
-  const barW = w / 2 / barCount;
+  const barW = w / 2 / drawCount;
   const { r, g, b } = parseComponentRgb();
 
-  for (let i = 0; i < barCount; i++) {
-    const mag = freqData ? (freqData[Math.floor((i / barCount) * freqData.length)] || 0) / 255 : 0;
+  if (!drawBarsVisualizer._levels || drawBarsVisualizer._levels.length !== barCount) {
+    drawBarsVisualizer._levels = new Float32Array(barCount);
+  }
+  const levels = drawBarsVisualizer._levels;
+  if (window.VizSample) VizSample.fillMirrored(freqData, levels);
+
+  for (let j = 0; j < drawCount; j++) {
+    const i = j + SKIP;
+    const mag = window.VizSample
+      ? levels[i]
+      : freqData
+        ? (freqData[Math.floor((i / barCount) * freqData.length)] || 0) / 255
+        : 0;
     const bh = Math.max(2, mag * barMax);
     const paint = (x) => {
-      const bx = x + 2;
-      const bw = Math.max(1, barW - 4);
+      const gap = Math.min(2, Math.max(0.5, barW * 0.12));
+      const bx = x + gap;
+      const bw = Math.max(1, barW - gap * 2);
       const y = h - bh;
       const gdt = ctx.createLinearGradient(0, y, 0, h);
       gdt.addColorStop(0, `rgb(${r}, ${g}, ${b})`);
@@ -1417,8 +1496,8 @@ function drawBarsVisualizer(ctx, canvas, freqData) {
       ctx.restore();
       ctx.fillRect(bx, y, bw, bh);
     };
-    paint(midX - (i + 1) * barW);
-    paint(midX + i * barW);
+    paint(midX - (j + 1) * barW);
+    paint(midX + j * barW);
   }
   ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`;
   ctx.fillRect(0, h - 2, w, 2);
@@ -1427,7 +1506,8 @@ function drawBarsVisualizer(ctx, canvas, freqData) {
 function resizeVizCanvas() {
   const canvas = dom.vizCanvas;
   if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
+  const host = canvas.parentElement || canvas;
+  const rect = host.getBoundingClientRect();
   const w = Math.max(1, Math.floor(rect.width));
   const h = Math.max(1, Math.floor(rect.height));
   if (canvas.width !== w || canvas.height !== h) {
@@ -1451,8 +1531,11 @@ function setupAudioVisualization() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.7;
+    analyser.smoothingTimeConstant = 0.55;
+    analyser.minDecibels = -82;
+    analyser.maxDecibels = -25;
     analyserDataArray = new Uint8Array(analyser.frequencyBinCount);
+    analyserTimeArray = new Uint8Array(analyser.fftSize);
     try {
       audioContext.createMediaElementSource(dom.videoEl).connect(analyser);
       analyser.connect(audioContext.destination);
@@ -1462,8 +1545,20 @@ function setupAudioVisualization() {
   }
   const draw = () => {
     visualizerRaf = requestAnimationFrame(draw);
+    resizeVizCanvas();
     if (analyser && analyserDataArray) analyser.getByteFrequencyData(analyserDataArray);
-    drawBarsVisualizer(ctx, canvas, analyserDataArray);
+    const mode = getVisualizerMode();
+    if (mode === "ecg" && analyser && analyserTimeArray) {
+      analyser.getByteTimeDomainData(analyserTimeArray);
+    }
+    const handled = window.EffectHub?.drawVisualizer?.(ctx, canvas, {
+      mode,
+      freq: analyserDataArray,
+      time: analyserTimeArray,
+      rgb: parseComponentRgb(),
+      now: performance.now(),
+    });
+    if (!handled) drawBarsVisualizer(ctx, canvas, analyserDataArray);
   };
   if (!visualizerRaf) visualizerRaf = requestAnimationFrame(draw);
 }
@@ -1495,11 +1590,27 @@ async function exportVideoJson() {
   const dataStr = JSON.stringify(payload, null, 2);
   if (window.showSaveFilePicker) {
     try {
-      const handle = await window.showSaveFilePicker({
-        startIn: "videos",
+      const startIn =
+        state.root ||
+        (await loadRootHandle()) ||
+        "music";
+      const pickerOpts = {
         suggestedName: "video.json",
         types: [{ description: "JSON 文件", accept: { "application/json": [".json"] } }],
-      });
+        startIn,
+      };
+      let handle;
+      try {
+        handle = await window.showSaveFilePicker(pickerOpts);
+      } catch (e) {
+        if (e?.name === "AbortError" || e?.name === "NotAllowedError") return;
+        // startIn 句柄失效时回退默认位置
+        handle = await window.showSaveFilePicker({
+          suggestedName: "video.json",
+          types: pickerOpts.types,
+          startIn: "music",
+        });
+      }
       const writable = await handle.createWritable();
       await writable.write(dataStr);
       await writable.close();
@@ -1535,6 +1646,7 @@ function applyVolume() {
 
 function setVolumePopoverOpen(open) {
   state.volumeOpen = !!open;
+  if (state.volumeOpen) setSpeedPopoverOpen(false);
   if (dom.volumePopover) dom.volumePopover.hidden = !state.volumeOpen;
   dom.btnVolume?.setAttribute("aria-expanded", state.volumeOpen ? "true" : "false");
   if (state.volumeOpen) applyVolume();
@@ -1553,6 +1665,40 @@ function bindVolumeEvents() {
     }
   });
   on(dom.volumePopover, "click", (e) => e.stopPropagation());
+}
+
+function applyPlaybackRate() {
+  const rate = Math.min(2, Math.max(1, Number(state.playbackRate) || 1));
+  state.playbackRate = Math.round(rate * 100) / 100;
+  if (dom.videoEl) dom.videoEl.playbackRate = state.playbackRate;
+  if (dom.speedSlider) dom.speedSlider.value = String(state.playbackRate);
+  const label = `加速 ${state.playbackRate.toFixed(2)}x`;
+  if (dom.btnSpeed) {
+    dom.btnSpeed.title = label;
+    dom.btnSpeed.setAttribute("aria-label", label);
+  }
+}
+
+function setSpeedPopoverOpen(open) {
+  state.speedOpen = !!open;
+  if (state.speedOpen) setVolumePopoverOpen(false);
+  if (dom.speedPopover) dom.speedPopover.hidden = !state.speedOpen;
+  dom.btnSpeed?.setAttribute("aria-expanded", state.speedOpen ? "true" : "false");
+  if (state.speedOpen) applyPlaybackRate();
+}
+
+function bindSpeedEvents() {
+  on(dom.btnSpeed, "click", (e) => {
+    e.stopPropagation();
+    setSpeedPopoverOpen(!state.speedOpen);
+  });
+  on(dom.speedSlider, "input", () => {
+    const rate = Number(dom.speedSlider.value);
+    if (!Number.isFinite(rate)) return;
+    state.playbackRate = rate;
+    applyPlaybackRate();
+  });
+  on(dom.speedPopover, "click", (e) => e.stopPropagation());
 }
 
 /* ---------- 搜索与筛选 ---------- */
@@ -1863,19 +2009,6 @@ function handleVideoEnded() {
   }
 }
 
-function applyPlaybackRate() {
-  if (dom.videoEl) dom.videoEl.playbackRate = state.playbackRate;
-}
-
-function cyclePlaybackSpeed() {
-  state.playbackRate =
-    state.playbackRate < 2
-      ? Math.min(2, Math.round((state.playbackRate + 0.25) * 100) / 100)
-      : 1;
-  applyPlaybackRate();
-
-}
-
 function applyPlayModeUi() {
   if (!dom.btnPlayMode) return;
   const icons = {
@@ -1981,10 +2114,14 @@ function bindEvents() {
     if (state.volumeOpen && dom.volumeControl && !dom.volumeControl.contains(e.target)) {
       setVolumePopoverOpen(false);
     }
+    if (state.speedOpen && dom.speedControl && !dom.speedControl.contains(e.target)) {
+      setSpeedPopoverOpen(false);
+    }
   });
   on(document, "keydown", (e) => {
     if (e.key !== "Escape") return;
     if (state.volumeOpen) setVolumePopoverOpen(false);
+    if (state.speedOpen) setSpeedPopoverOpen(false);
   });
 
   on(dom.btnPlaylistSearch, "click", (e) => {
@@ -2029,10 +2166,33 @@ function bindEvents() {
   bindColorPickEvents();
   on(dom.btnImport, "click", () => openImportFolderPicker().catch(console.error));
   bindVolumeEvents();
+  bindSpeedEvents();
   on(dom.btnPrev, "click", () => playAdjacentTrack(-1));
   on(dom.btnPlayPause, "click", togglePlayPause);
   on(dom.btnNext, "click", () => playAdjacentTrack(1));
-  on(dom.btnSpeed, "click", cyclePlaybackSpeed);
+  on(dom.playerZoneVideo, "click", (e) => {
+    if (state.editing && state.pickTarget) return;
+    if (e.target.closest?.("button, a, input")) return;
+    togglePlayPause();
+  });
+  on(document, "keydown", (e) => {
+    if (isTypingTarget(e.target)) return;
+    if (e.code === "Space" || e.key === " ") {
+      if (e.repeat) return;
+      e.preventDefault();
+      togglePlayPause();
+      return;
+    }
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      seekByDelta(-5);
+      return;
+    }
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      seekByDelta(5);
+    }
+  });
   on(dom.btnPlayMode, "click", togglePlayMode);
   on(dom.btnPip, "click", () => togglePictureInPicture().catch(console.error));
   on(dom.btnFullscreen, "click", () => toggleFullscreen().catch(console.error));
@@ -2087,6 +2247,7 @@ function init() {
   syncProgressFromVideo();
   syncPlayPauseButton();
   setupAudioVisualization();
+  syncSongEffects();
   restoreLibraryOnStart().catch(console.error);
 }
 
