@@ -1713,7 +1713,7 @@ body.viz-hero-active .viz-canvas {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0 var(--ui-shadow-x) var(--ui-shadow-y) 0;
+  padding: 0 0 var(--ui-shadow-y) 0;
   box-sizing: border-box;
 }
 

@@ -6,7 +6,7 @@
  * bg: 背景图路径数组（BgSync）
  * progress: 自定义进度滑块 { bodyClass, wrapClass, thumbClass, src, thumbPx }
  * filter / filterMute / filterWindows: 全局滤镜（chroma / neonDesat / bwDesat / voyeur）
- * viz: 频谱模式 fire | ecg | uno | hero | blocks
+ * viz: 频谱模式 fire | ecg | uno | hero | blocks | polyline
  * overlay: 背景叠加层 id（由对应 *-fx 注册到 EffectHub）
  *   arrows | clapMarch | fruitMarch | chaosBoogie | aboutYou | tinyMe | overwrite | exorcismText | idealFloat | poisonShow
  * badge: 是否显示星标（默认 true）
@@ -105,10 +105,8 @@
     {
       id: "moonBeautiful",
       panel: "moonBeautiful",
-      bg: [
-        `${FX}想听你说月色真美！/想听你说月色真美！.png`,
-      ],
-      keywords: ["想听你说月色真美！"],
+      bg: [`${FX}想听你说月色真美！/想听你说月色真美！.png`],
+      keywords: ["对我说月色真美啊！"],
     },
     {
       id: "telepathy",
@@ -180,6 +178,11 @@
       viz: "blocks",
       keywords: ["虚假舞蹈"],
     },
+    {
+      id: "stopLoss",
+      viz: "polyline",
+      keywords: ["止损家"],
+    },
     // —— 进度条滑块 ——
     {
       id: "discoNight",
@@ -230,7 +233,7 @@
     },
   ];
 
-  const VIZ_PRIORITY = ["fire", "ecg", "uno", "hero", "blocks"];
+  const VIZ_PRIORITY = ["fire", "ecg", "uno", "hero", "blocks", "polyline"];
   const PANEL_PRIORITY = [
     "moonBeautiful",
     "telepathy",

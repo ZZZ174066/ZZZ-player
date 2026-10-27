@@ -240,7 +240,6 @@ function setInfoPanelMode(mode) {
     if (next === "lyrics") ensureLyricsLoaded().then(() => syncActiveLyric(true));
     return;
   }
-  if (next !== "info" && state.editing) setInfoEditing(false);
   state.infoPanelMode = next;
   syncInfoPanelModeUi();
   if (next === "lyrics") ensureLyricsLoaded().then(() => syncActiveLyric(true));
@@ -973,26 +972,28 @@ function syncPlayPauseButton() {
 }
 
 function togglePlayPause() {
-  const list = getPlayableIndices();
-  if (!list.length) {
-
-    return;
-  }
-  if (state.currentIndex < 0 || !list.includes(state.currentIndex)) {
-    playSongAt(list[0]);
-    return;
-  }
   const v = dom.videoEl;
-  if (!v?.src) {
-    playSongAt(state.currentIndex);
+  const cur = state.currentIndex;
+  const currentSong = cur >= 0 ? state.songs[cur] : null;
+
+  // 已有当前曲时只切换其播放/暂停（即使被筛选出播放列表也不跳歌）
+  if (currentSong?.url) {
+    if (!v?.src) {
+      playSongAt(cur);
+      return;
+    }
+    if (v.paused || v.ended) {
+      resumeAudioContext();
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
     return;
   }
-  if (v.paused || v.ended) {
-    resumeAudioContext();
-    v.play().catch(() => {});
-  } else {
-    v.pause();
-  }
+
+  const list = getPlayableIndices();
+  if (!list.length) return;
+  playSongAt(list[0]);
 }
 
 /* ---------- 导入 ---------- */
@@ -1995,7 +1996,7 @@ function playAdjacentTrack(direction) {
 }
 
 function handleVideoEnded() {
-  if (!getPlayableIndices().length) {
+  if (!getPlayableIndices().length || state.editing) {
     syncPlayPauseButton();
     renderPlaylist();
     return;

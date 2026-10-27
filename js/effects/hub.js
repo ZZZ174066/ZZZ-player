@@ -2,7 +2,7 @@
  * 特效总线：新增 overlay / 频谱特效只需 register，不必改 main.js
  *
  * Overlay API: { exportAs?, resolveSong(v), sync(v), destroy? }
- * 频谱：在 syncVisualizer 里按 mode 分发（fire|ecg|uno|hero|blocks|bars）
+ * 频谱：在 syncVisualizer 里按 mode 分发（fire|ecg|uno|hero|blocks|polyline|bars）
  */
 (function () {
   /** @type {Array<{ resolveSong: Function, sync: Function, destroy?: Function, exportAs?: string }>} */
@@ -51,10 +51,12 @@
     document.body.classList.toggle("viz-hero-active", m === "hero");
     document.body.classList.toggle("viz-uno-active", m === "uno");
     document.body.classList.toggle("viz-blocks-active", m === "blocks");
+    document.body.classList.toggle("viz-polyline-active", m === "polyline");
 
     if (m !== "fire") window.FireViz?.reset?.();
     if (m !== "ecg") window.EcgViz?.reset?.();
     if (m !== "blocks") window.BlocksViz?.reset?.();
+    if (m !== "polyline") window.PolylineViz?.reset?.();
     window.UnoViz?.setActive?.(m === "uno");
     window.HeroViz?.setActive?.(m === "hero");
 
@@ -96,6 +98,10 @@
     }
     if (m === "ecg" && window.EcgViz) {
       EcgViz.draw(ctx, canvas, freq, time, rgb);
+      return true;
+    }
+    if (m === "polyline" && window.PolylineViz) {
+      PolylineViz.draw(ctx, canvas, freq, rgb);
       return true;
     }
     if (m === "uno") {

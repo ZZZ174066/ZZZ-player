@@ -15,7 +15,7 @@
 
 频谱 *-viz.js
   viz-sample       公共采样
-  fire / blocks / uno / ecg / hero
+  fire / blocks / uno / ecg / hero / polyline
 
 叠加 *-fx.js（末尾 EffectHub.registerOverlay）
   arrow / clap / fruit / chaos / about-you / tiny-me / overwrite / exorcism / ideal / poison
